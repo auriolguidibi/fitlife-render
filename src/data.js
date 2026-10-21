@@ -5,4 +5,4 @@ export const SONGS = [
   ['Lose Yourself', 'Eminem'],
 ];
 
-export const THEMES = { lime: '#3eeaa8', orange: '#ff9248', cyan: '#4cc9ff', pink: '#ff5fae' };
+export const THEMES = { lime: '#22c55e', orange: '#f97316', cyan: '#38bdf8', pink: '#ec4899' };
