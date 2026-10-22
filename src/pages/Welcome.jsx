@@ -41,7 +41,7 @@ export default function Welcome() {
         {content ? <Vid src={asset(content.video)} poster={asset(content.poster)} pos="center 20%" /> : <div className="art skeleton" />}
       </div>
       <div className="txt">
-        <div className="brand">{content ? <>{content.brand.slice(0, 3)}<span>{content.brand.slice(3)}</span></> : <>Fit<span>Life</span></>}</div>
+        <div className="brand"><img className="brand-mark" src={`${BASE}logo.png`} alt="" width="34" height="34" /><span className="brand-name">{content ? <>{content.brand.slice(0, 3)}<span>{content.brand.slice(3)}</span></> : <>Fit<span>Life</span></>}</span></div>
 
         {error ? (
           <div className="state-box" role="alert">
