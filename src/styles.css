@@ -771,3 +771,21 @@ body{font-weight:400}
 .today-t span,.stats b,.stat-card b,.atotals b,.live-dist b{color:var(--lime)}
 
 .sheet{text-align:left}
+
+/* ---------- écran de chargement : logo, anneau, halo, barre ---------- */
+.splash{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:radial-gradient(420px 320px at 50% 42%,rgba(163,230,53,.13),transparent 70%),#0b0e12}
+.splash-in{display:grid;justify-items:center;gap:20px}
+.splash-logo{position:relative;width:128px;height:128px;display:grid;place-items:center}
+.splash-logo img{position:relative;z-index:1;width:76px;height:76px;object-fit:contain;animation:sp-breathe 1.9s ease-in-out infinite;filter:drop-shadow(0 6px 18px rgba(163,230,53,.35))}
+.splash-logo::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 55%,#a3e635 85%,#22c55e);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:sp-spin 1.15s linear infinite}
+.splash-logo::after{content:"";position:absolute;inset:-26px;border-radius:50%;background:radial-gradient(circle,rgba(163,230,53,.22),transparent 65%);animation:sp-pulse 1.9s ease-in-out infinite}
+.splash-word{font-size:26px;font-weight:700;letter-spacing:-.6px;color:#fff;animation:sp-rise .6s .15s cubic-bezier(.2,.9,.3,1) both}
+.splash-word span{background:#22c55e;color:#04110a;padding:0 8px;border-radius:8px;margin-left:3px}
+.splash-bar{width:132px;height:3px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;animation:sp-rise .6s .3s cubic-bezier(.2,.9,.3,1) both}
+.splash-bar i{display:block;width:45%;height:100%;border-radius:3px;background:linear-gradient(90deg,transparent,#a3e635,#22c55e);animation:sp-slide 1.25s ease-in-out infinite}
+@keyframes sp-spin{to{transform:rotate(360deg)}}
+@keyframes sp-breathe{0%,100%{transform:scale(.94)}50%{transform:scale(1.06)}}
+@keyframes sp-pulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes sp-slide{0%{transform:translateX(-110%)}100%{transform:translateX(250%)}}
+@keyframes sp-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sp-in{from{opacity:0}to{opacity:1}}

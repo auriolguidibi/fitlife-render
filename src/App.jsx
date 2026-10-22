@@ -8,6 +8,7 @@ import { useAuth } from './auth';
 import Icon from './components/Icon';
 import { Goals } from './pages/Onboarding';
 import Welcome from './pages/Welcome';
+import Splash from './components/Splash';
 import RequireAuth, { RequireAdmin } from './components/RequireAuth';
 import Home from './pages/Home';
 import { CourseDetail, Courses } from './pages/Courses';
@@ -62,7 +63,7 @@ export default function App() {
     <div className={'app' + (bare ? ' bare' : '')}>
       <main className="main" key={pathname}>
         <Routes>
-          <Route path="/" element={authLoading ? null : <Navigate to={user ? (user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
+          <Route path="/" element={authLoading ? <Splash /> : <Navigate to={user ? (user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/photo" element={<Photo />} />

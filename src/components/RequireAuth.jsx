@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { useStore } from '../store';
+import Splash from './Splash';
 
 /* Réserve une page aux comptes connectés qui ont choisi leurs objectifs. */
-export default function RequireAuth({ children, fallback = null }) {
+export default function RequireAuth({ children, fallback = <Splash /> }) {
   const { user, loading } = useAuth();
   if (loading) return fallback;
   if (!user) return <Navigate to="/welcome" replace />;
@@ -15,7 +16,7 @@ export default function RequireAuth({ children, fallback = null }) {
 /* Réserve une page aux administrateurs (le serveur refuse de toute façon les requêtes des autres). */
 export function RequireAdmin({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <Splash />;
   if (!user) return <Navigate to="/welcome" replace />;
   return user.admin ? children : <Navigate to="/home" replace />;
 }
