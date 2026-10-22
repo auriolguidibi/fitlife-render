@@ -40,7 +40,7 @@ function Nav({ unread }) {
     <nav className="tabbar" aria-label="Principal">
       {NAV.map(([to, ic, label]) => (
         <NavLink key={to} to={to} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} aria-label={label}>
-          <Icon n={ic} />{ic === 'chat' && unread > 0 && <b className="badge" aria-label={`${unread} non lu${unread > 1 ? 's' : ''}`}>{unread > 9 ? '9+' : unread}</b>}
+          <Icon n={ic} /><span className="tl">{label}</span>{ic === 'chat' && unread > 0 && <b className="badge" aria-label={`${unread} non lu${unread > 1 ? 's' : ''}`}>{unread > 9 ? '9+' : unread}</b>}
         </NavLink>
       ))}
     </nav>

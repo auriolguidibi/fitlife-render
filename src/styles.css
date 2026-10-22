@@ -690,3 +690,84 @@ body{background:#07090d}
 
 ::selection{background:color-mix(in srgb,var(--lime) 35%,transparent)}
 *{scrollbar-width:thin;scrollbar-color:#2a3548 transparent}
+
+/* =====================================================================
+   Fidélité à la référence (kit « fitness dark ») : fond quasi noir, un seul vert, rayons nets,
+   photo plein écran à l'accueil, barre de navigation plate avec libellés, onglets soulignés.
+   ===================================================================== */
+:root{--r:14px;--tab:calc(66px + env(safe-area-inset-bottom));--bg:#0f1318;--card:#171b23;--card2:#1f242d;--line:#272c37}
+body{font-weight:400}
+.h1,.sec h3,.h3{font-weight:700}
+.sec h3{font-size:17px}
+.sec a{font-weight:500;font-size:12.5px}
+.btn{border-radius:10px;font-weight:600;font-size:15px;min-height:50px}
+.btn.small{min-height:42px}
+.book{border-radius:10px}
+.chip,.chip.on{border-radius:10px}
+.search,.atabs,.seg{border-radius:10px}
+.fld input,.fld textarea,.fld select,.chat-form textarea,.ex-row input{border-radius:10px;background:#12161d;border:1px solid #2a303c}
+.fld label{font-weight:500;font-size:12px;color:#9aa3b5}
+.card,.row,.trow,.today,.post,.chcard,.evcard,.stat-card,.state-box{border-radius:14px}
+.thumb{border-radius:10px}
+.avatar{background:var(--lime)}
+.thumb.ico,.call-ic,.art-m,.pp,.send,.dot,.best,.ch-status.active,.trophy,.kcal,.play,.admin-link,.chip.on,.atab.on,.day.on,.book.on,.bubble.mine,.goal .chk,.toast,.board .board-row:nth-child(1) .rank,.bar-c.is-today i,.prog-bar i,.sess .prog i,.chev i,.big .fin,.tabbar .tab.on{background:var(--lime)}
+
+/* retour : simple chevron, sans pastille (hors boutons sur photo) */
+.topbar .icon-btn:not(.glass),.chat-h .icon-btn,.live-top .icon-btn,.call-h .icon-btn{background:transparent;border:0}
+
+/* en-têtes de sections et cartes photo (« Trending workouts ») */
+.kcal{width:auto;height:auto;border-radius:8px;padding:5px 9px;background:rgba(15,19,24,.78);color:#fff;font-size:12px;font-weight:600;right:12px;top:12px}
+.kcal span{display:inline-flex;align-items:baseline;gap:3px}
+.kcal small{display:inline;font-size:11px;font-weight:500;color:var(--lime)}
+.feat{border-radius:14px}
+.feat h3{font-weight:700;font-size:clamp(18px,5.4vw,21px);line-height:1.15}
+.xtile,.atype,.course-hero,.ev-hero{border-radius:14px}
+.course-hero{border-radius:0}
+
+/* détail : photo en tête, sans arrondi, titre puis métadonnées */
+.det-hero{border-radius:0}
+.pill{border-radius:10px}
+.pill i{border-radius:50%}
+.ex div{border-radius:10px}
+
+/* onglets soulignés (Message / Notification) */
+.atabs,.seg{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0;gap:0}
+.atab,.seg button{border-radius:0;color:#8a93a6;font-weight:500;min-height:44px;border-bottom:2px solid transparent}
+.atab.on,.seg button.on{background:transparent;color:var(--lime);border-bottom-color:var(--lime);font-weight:600}
+
+/* barre de navigation : plate, pleine largeur, icône + libellé */
+.tabbar{left:50%;bottom:0;transform:translateX(-50%);width:min(100%,var(--col));border-radius:0;background:#0f1318;border:0;border-top:1px solid #1e232d;box-shadow:none;backdrop-filter:none;padding:7px 2px max(7px,env(safe-area-inset-bottom));align-items:stretch}
+.tabbar .tab{flex:1;max-width:none;height:auto;min-width:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 0;font-size:21px;color:#6f7889}
+.tabbar .tab .tl{font-size:10px;font-weight:500;letter-spacing:.1px;line-height:1}
+.tabbar .tab.on{background:transparent;color:var(--lime);box-shadow:none}
+.tabbar .tab.on .tl{font-weight:600}
+.badge{top:0;right:calc(50% - 20px);border-color:#0f1318}
+.toast{border-radius:10px}
+
+/* accueil : photo en arrière-plan, titre centré, boutons empilés */
+.onb{background:#0b0e12;padding:0 var(--gut) max(22px,env(safe-area-inset-bottom));justify-content:flex-end;text-align:center}
+.onb-art{position:absolute;inset:0;max-height:none;min-height:0;margin:0;border-radius:0;background:#0b0e12;z-index:0}
+.onb-art::after{background:linear-gradient(180deg,rgba(11,14,18,.55) 0,rgba(11,14,18,.15) 32%,rgba(11,14,18,.78) 62%,rgba(11,14,18,.97) 100%)}
+.onb .txt{display:contents}
+.onb .brand{position:absolute;z-index:2;top:max(22px,env(safe-area-inset-top));left:var(--gut);margin:0;color:#fff}
+.onb h1,.onb p,.onb .btn,.onb .link-btn,.onb .state-box,.onb .sk-lines{position:relative;z-index:2}
+.onb h1{font-size:clamp(34px,10.5vw,44px);line-height:1.1;letter-spacing:-.8px;font-weight:700;margin:0 0 12px;padding:0}
+.onb p{margin:0 auto 26px;max-width:300px;color:#b6bfcc;font-size:14px;line-height:1.55}
+.onb .btn{border-radius:10px}
+.onb .link-btn{display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:50px;border-radius:10px;background:#fff;color:#12161d;font-size:15px;font-weight:600;padding:0 16px}
+.onb .link-btn u{text-decoration:none;color:#12161d;font-weight:700}
+.onb .sk-lines{margin-bottom:0}
+
+/* connexion / inscription : plein écran, titre à gauche */
+.sheet-wrap{align-items:stretch;background:rgba(7,9,12,.8)}
+.sheet{min-height:100dvh;max-height:100dvh;border-radius:0;background:var(--bg);border:0;padding-top:max(18px,env(safe-area-inset-top))}
+.sheet .grab{display:none}
+.sheet .x{left:var(--gut);right:auto;top:max(14px,env(safe-area-inset-top));background:transparent;width:44px;height:44px}
+.sheet h2{margin-top:58px;font-size:26px;font-weight:700;padding-right:0;letter-spacing:-.4px}
+.s-sub{font-size:13.5px;margin:6px 0 20px}
+.sheet .btn{margin-top:8px}
+
+/* thème : le vert reste l'unique accent */
+.today-t span,.stats b,.stat-card b,.atotals b,.live-dist b{color:var(--lime)}
+
+.sheet{text-align:left}
