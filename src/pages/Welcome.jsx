@@ -4,7 +4,6 @@ import { api } from '../api';
 import { useAuth } from '../auth';
 import { useStore } from '../store';
 import { Vid } from '../components/Media';
-import Splash from '../components/Splash';
 import AuthSheet from '../components/AuthSheet';
 import { assetUrl } from '../lib/media';
 
@@ -35,7 +34,6 @@ export default function Welcome() {
   const closeSheet = () => { setSheet(null); setTimeout(() => opener.current?.focus(), 0); };
 
   const first = user?.name?.split(' ')[0];
-  if (!content && !error) return <Splash />;
 
   return (
     <section className="onb">
