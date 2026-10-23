@@ -24,7 +24,7 @@ import Call from './pages/Call';
 import CommunityPage, { CommunityNew } from './pages/CommunityPage';
 import { NewGroup, SocialCommunities, SocialMessages, SocialPeople } from './pages/Social';
 import { EventDetail, Events } from './pages/Events';
-import { AdminActivity, AdminHome, AdminUserDetail, AdminUsers } from './pages/Admin';
+import { AdminActivity, AdminHome, AdminProfile, AdminUserDetail, AdminUsers } from './pages/Admin';
 import { AdminContent } from './pages/AdminContent';
 import { AdminEvents } from './pages/AdminEvents';
 import { ChallengeDetail, ChallengeNew, Challenges } from './pages/Challenges';
@@ -33,7 +33,7 @@ const NAV = [
   ['/home', 'home', 'Accueil'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'], ['/trainers', 'users', 'Coachs'],
   ['/favorites', 'heart', 'Favoris'], ['/profile', 'user', 'Profil'],
 ];
-const BARE = ['/welcome', '/goals', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
+const BARE = ['/welcome', '/goals', '/admin', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
 
 function Nav({ unread }) {
   return (
@@ -63,7 +63,7 @@ export default function App() {
     <div className={'app' + (bare ? ' bare' : '')}>
       <main className="main" key={pathname}>
         <Routes>
-          <Route path="/" element={authLoading ? null : <Navigate to={user ? (user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
+          <Route path="/" element={authLoading ? null : <Navigate to={user ? (user.admin ? '/admin' : user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/photo" element={<Photo />} />
@@ -86,6 +86,7 @@ export default function App() {
           <Route path="/activity/events" element={<RequireAuth><Events /></RequireAuth>} />
           <Route path="/activity/events/:id" element={<RequireAuth><EventDetail /></RequireAuth>} />
           <Route path="/admin" element={<RequireAdmin><AdminHome /></RequireAdmin>} />
+          <Route path="/admin/profile" element={<RequireAdmin><AdminProfile /></RequireAdmin>} />
           <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
           <Route path="/admin/users/:id" element={<RequireAdmin><AdminUserDetail /></RequireAdmin>} />
           <Route path="/admin/activities/:id" element={<RequireAdmin><AdminActivity /></RequireAdmin>} />

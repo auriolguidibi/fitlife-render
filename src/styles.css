@@ -778,3 +778,53 @@ body{font-weight:400}
 .onb .brand-name{display:inline-flex;align-items:center;line-height:1}
 .onb .brand-name span{background:var(--lime);color:var(--on-lime);padding:2px 8px;border-radius:8px;margin-left:3px}
 .onb .brand .brand-name{background:none;color:#fff;padding:0;margin:0;border-radius:0}
+
+/* ---------- espace administrateur : thème corail (maquette), limité à .adm ---------- */
+body:has(.adm),.app:has(.adm){background:#fff}
+.adm{--bg:#fff;--card:#ffdede;--card2:#ffc9c9;--line:#f6c6c6;--ink:#2a2323;--mut:#8f7d7d;--lime:#f0605d;--grad:#f0605d;--on-lime:#fff;--danger:#b3261e;--edge:0 solid transparent;--r:20px;
+  background:#fff;color:var(--ink);min-height:100dvh;padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.adm .topbar h2{color:var(--ink);font-weight:800}
+.adm .icon-btn,.adm .icon-btn:not(.glass){background:#ffdede;color:#f0605d;border:0}
+.adm .card,.adm .row,.adm .stat-card,.adm .state-box,.adm .today,.adm .search,.adm .stats div{background:var(--card);border:0;box-shadow:none;color:var(--ink)}
+.adm .row,.adm .card{border-radius:20px}
+.adm .row .t small,.adm .muted,.adm small{color:var(--mut)}
+.adm .today.atotals{background:#a82323;color:#fff;border-radius:22px;margin-left:0;margin-right:0}
+.adm .today.atotals small{color:#ffd0d0}
+.adm .today.atotals b,.adm .today-t span{color:#fff}
+.adm .stat-card{border-radius:22px;text-align:left}
+.adm .stat-card b,.adm .stats b,.adm .atotals b{color:#f0605d}
+.adm .today.atotals b{color:#fff}
+.adm .search{border-radius:24px;background:#ffdede;color:#f0605d}
+.adm .search input{color:var(--ink)}
+.adm .btn{background:#f0605d;color:#fff;border-radius:26px;box-shadow:none}
+.adm .btn.ghost{background:#ffdede;color:#f0605d}
+.adm .btn.danger{background:transparent;border:1.5px solid #b3261e;color:#b3261e}
+.adm .chip{background:#ffdede;color:#a82323;border:0}
+.adm .chip.on{background:#f0605d;color:#fff}
+.adm input,.adm select,.adm textarea{color:var(--ink)}
+.adm .atabs{background:#ffdede;border:0;border-radius:24px;padding:3px}
+.adm .atab{color:#a82323;border-bottom:0;border-radius:20px}
+.adm .atab.on{background:#f0605d;color:#fff}
+.adm .avatar{background:#f0605d;color:#fff}
+.ahero{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f26a66,#ec4f4f);color:#fff;border-radius:22px;padding:16px;margin:2px 0 14px}
+.ahero .avatar{width:56px;height:56px;font-size:20px;background:#fff!important;color:#f0605d!important;flex:none}
+.ahero div{min-width:0}
+.ahero b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ahero small{display:block;color:#ffe3e3!important;font-size:12.5px}
+.adm .ahero small{color:#ffe3e3}
+.amenu{display:grid;gap:6px;margin-top:4px}
+.arow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid #f3d6d6;padding:14px 4px;color:var(--ink)}
+.arow span{display:grid;min-width:0}
+.arow b{font-size:15px;font-weight:600}
+.arow small{font-size:12px;color:var(--mut)}
+.arow i{font-style:normal;font-size:22px;color:#f0605d}
+.arow.out b{color:#b3261e}
+.anavbar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,var(--col));z-index:30;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -6px 24px rgba(240,96,93,.14);padding:8px 4px max(8px,env(safe-area-inset-bottom))}
+.anav{display:flex;flex-direction:column;align-items:center;gap:3px;color:#b9a5a5;font-size:20px;padding:6px 0;min-width:0}
+.anav span{font-size:10px;font-weight:600;line-height:1;white-space:nowrap}
+.anav.on{color:#f0605d}
+.anav.fab i{display:grid;place-items:center;width:56px;height:56px;margin-top:-30px;border-radius:50%;background:#f0605d;color:#fff;font-size:24px;border:5px solid #fff;box-shadow:0 8px 20px rgba(240,96,93,.4)}
+.anav.fab span{color:#b9a5a5}
+.anav.fab.on span{color:#f0605d}
+.adm .skeleton{background:linear-gradient(90deg,#ffe3e3,#fff0f0,#ffe3e3);background-size:200% 100%}
+.adm .row .thumb,.adm .thumb{background:#ffc9c9}

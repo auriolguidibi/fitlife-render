@@ -2,30 +2,53 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useStore } from '../store';
+import { useAuth } from '../auth';
 import RouteMap from '../components/RouteMap';
 import { TypePhoto, dateLabel, timeLabel } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
+import Icon from '../components/Icon';
 import { BackBtn, Empty, SearchBox } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, typeOf } from '../lib/tracker';
 
-export function AdminTabs() {
-  const cls = ({ isActive }) => 'atab' + (isActive ? ' on' : '');
+/* barre du bas de l'espace administrateur : bouton central surélevé (Contenu) */
+export function AdminNav() {
+  const cls = ({ isActive }) => 'anav' + (isActive ? ' on' : '');
   return (
-    <nav className="atabs admin-tabs" aria-label="Espace administrateur">
-      <NavLink to="/admin" end className={cls}>Aperçu</NavLink>
-      <NavLink to="/admin/users" className={cls}>Comptes</NavLink>
-      <NavLink to="/admin/content" className={cls}>Contenu</NavLink>
-      <NavLink to="/admin/events" className={cls}>Événements</NavLink>
+    <nav className="anavbar" aria-label="Espace administrateur">
+      <NavLink to="/admin" end className={cls}><Icon n="home" /><span>Aperçu</span></NavLink>
+      <NavLink to="/admin/users" className={cls}><Icon n="users" /><span>Comptes</span></NavLink>
+      <NavLink to="/admin/content" className={({ isActive }) => 'anav fab' + (isActive ? ' on' : '')}><i><Icon n="book" /></i><span>Contenu</span></NavLink>
+      <NavLink to="/admin/events" className={cls}><Icon n="clock" /><span>Événements</span></NavLink>
+      <NavLink to="/admin/profile" className={cls}><Icon n="user" /><span>Profil</span></NavLink>
     </nav>
   );
 }
 
-export function AdminShell({ title = 'Administration', back = '/home', children }) {
+export function AdminShell({ title = 'Administration', back, children }) {
   return (
-    <section className="page admin">
-      <div className="topbar"><BackBtn to={back} /><h2>{title}</h2><span className="sp" /></div>
-      <div className="px"><AdminTabs />{children}</div>
+    <section className="page admin adm">
+      <div className="topbar">{back ? <BackBtn to={back} /> : <span className="sp" />}<h2>{title}</h2><span className="sp" /></div>
+      <div className="px">{children}</div>
+      <AdminNav />
     </section>
+  );
+}
+
+/* ---------------- profil de l'administrateur ---------------- */
+export function AdminProfile() {
+  const { user, logout } = useAuth();
+  const nav = useNavigate();
+  const { dispatch } = useStore();
+  const out = async () => { await logout(); dispatch({ type: 'reset' }); nav('/welcome', { replace: true }); };
+  const rows = [['Comptes', 'Voir tous les comptes et leurs parcours', '/admin/users'], ['Contenu', 'Séances, cours, coachs', '/admin/content'], ['Événements', 'Créer et suivre les inscriptions', '/admin/events']];
+  return (
+    <AdminShell title="Mon profil">
+      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><b>{user?.name}</b><small>{user?.email}</small></div></div>
+      <div className="amenu">
+        {rows.map(([t, s, to]) => <Link key={to} to={to} className="arow"><span><b>{t}</b><small>{s}</small></span><i aria-hidden="true">›</i></Link>)}
+        <button className="arow out" onClick={out}><span><b>Se déconnecter</b></span><i aria-hidden="true">›</i></button>
+      </div>
+    </AdminShell>
   );
 }
 
@@ -36,6 +59,7 @@ const frDate = (t) => new Date(t).toLocaleDateString('fr', { day: 'numeric', mon
 
 /* ---------------- aperçu ---------------- */
 export function AdminHome() {
+  const { user } = useAuth();
   const [d, setD] = useState(null);
   const [error, setError] = useState('');
   const load = useCallback(() => { setError(''); api.admin.overview().then(setD).catch((e) => setError(e.message)); }, []);
@@ -43,10 +67,11 @@ export function AdminHome() {
   const C = d?.counts;
   const cards = d ? [
     ['Comptes', C.users, '/admin/users'], ['Activités', C.activities, '/admin/users'], ['Séances', C.workouts, '/admin/content'], ['Cours', C.courses, '/admin/content'],
-    ['Coachs', C.trainers, '/admin/content'], ['Événements', C.events, '/admin/events'], ['Défis', C.challenges, '/activity/challenges'], ['Publications', C.posts, '/activity/community'],
+    ['Coachs', C.trainers, '/admin/content'], ['Événements', C.events, '/admin/events'], ['Défis', C.challenges], ['Publications', C.posts],
   ] : [];
   return (
     <AdminShell>
+      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Espace administrateur</small><b>{user?.name}</b></div></div>
       {error ? <ErrorBox title="Impossible de charger l'aperçu" message={error} onRetry={load} /> : !d ? (
         <div aria-busy="true" aria-label="Chargement"><div className="skeleton" style={{ height: 180, borderRadius: 26 }} /></div>
       ) : (
@@ -58,7 +83,9 @@ export function AdminHome() {
           </div>
           <p className="muted" style={{ textAlign: 'center' }}>Cette semaine : {d.week.users} {d.week.users === 1 ? 'nouveau compte' : 'nouveaux comptes'}, {d.week.activities} {d.week.activities === 1 ? 'activité' : 'activités'}.</p>
           <div className="admin-grid">
-            {cards.map(([label, n, to]) => <Link key={label} to={to} className="stat-card"><b>{n}</b><small>{label}</small></Link>)}
+            {cards.map(([label, n, to]) => to
+              ? <Link key={label} to={to} className="stat-card"><b>{n}</b><small>{label}</small></Link>
+              : <div key={label} className="stat-card"><b>{n}</b><small>{label}</small></div>)}
           </div>
         </>
       )}
