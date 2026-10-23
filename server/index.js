@@ -33,7 +33,7 @@ const sha = (s) => createHash('sha256').update(s).digest('hex');
 const cookies = (req) => Object.fromEntries((req.headers.cookie || '').split(';').map((c) => c.trim().split('=')).filter((p) => p[0]).map(([k, ...v]) => [k, decodeURIComponent(v.join('='))]));
 // administrateurs : adresses e-mail listées dans ADMIN_EMAILS (séparées par des virgules), jamais écrites dans le code
 const ADMINS = new Set((process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean));
-const isAdmin = (u) => ADMINS.has(String(u.email).toLowerCase());
+const isAdmin = (u) => u.role === 'admin' || ADMINS.has(String(u.email).toLowerCase());   // rôle enregistré en base (seule la base le modifie), ou adresse listée dans ADMIN_EMAILS
 const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), avatar: u.avatar_url || null });
 // Express 4 ne capte pas les erreurs des handlers async : on les transmet au gestionnaire d'erreurs
 const ah = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
