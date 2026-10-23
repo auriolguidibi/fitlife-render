@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerSocial } from './social.js';
 import { createRealtime } from './realtime.js';
-import { activities, bookings, challenges, courses, db, eventMembers, events, favorites, getContent, goals, logs, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
+import { activities, bookings, challenges, courses, db, eventMembers, events, favorites, getContent, goals, logs, mealPlans, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
 
 const PORT = Number(process.env.PORT) || 5181;
 const PROD = process.env.NODE_ENV === 'production';
@@ -34,7 +34,8 @@ const cookies = (req) => Object.fromEntries((req.headers.cookie || '').split(';'
 // administrateurs : adresses e-mail listées dans ADMIN_EMAILS (séparées par des virgules), jamais écrites dans le code
 const ADMINS = new Set((process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean));
 const isAdmin = (u) => u.role === 'admin' || ADMINS.has(String(u.email).toLowerCase());   // rôle enregistré en base (seule la base le modifie), ou adresse listée dans ADMIN_EMAILS
-const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), avatar: u.avatar_url || null });
+const isCoach = (u) => u.role === 'coach';                                                  // rôle donné par un administrateur
+const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), coach: isCoach(u), avatar: u.avatar_url || null });
 // Express 4 ne capte pas les erreurs des handlers async : on les transmet au gestionnaire d'erreurs
 const ah = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 const toId = (s) => (typeof s === 'string' && /^[0-9a-f]{24}$/i.test(s) ? new ObjectId(s) : null);
@@ -371,8 +372,29 @@ app.get('/api/profile', requireAuth, ah(async (req, res) => {
 app.put('/api/profile', requireAuth, ah(async (req, res) => {
   const name = String(req.body?.name ?? '').trim();
   if (name.length < 1 || name.length > 40) return res.status(400).json({ error: 'Entre ton nom (40 caractères maximum).', fields: { name: 'Entre ton nom (40 caractères maximum).' } });
-  await users.updateOne({ _id: req.user._id }, { $set: { name } });
-  res.json({ user: publicUser({ ...req.user, name }) });
+  const set = { name };
+  const email = req.body?.email == null ? req.user.email : String(req.body.email).trim().toLowerCase();
+  if (email !== req.user.email) {   // changer d'e-mail redemande le mot de passe
+    if (!EMAIL.test(email) || email.length > 254) return res.status(400).json({ error: 'Entre une adresse e-mail valide.', fields: { email: 'Entre une adresse e-mail valide.' } });
+    if (!(await bcrypt.compare(String(req.body?.password ?? ''), req.user.password_hash))) return res.status(403).json({ error: 'Mot de passe incorrect.', fields: { password: 'Mot de passe incorrect.' } });
+    if (await users.findOne({ email }, { projection: { _id: 1 } })) return res.status(409).json({ error: 'Cet e-mail est déjà utilisé.', fields: { email: 'Cet e-mail est déjà utilisé.' } });
+    set.email = email;
+  }
+  try { await users.updateOne({ _id: req.user._id }, { $set: set }); } catch (e) { if (e.code === 11000) return res.status(409).json({ error: 'Cet e-mail est déjà utilisé.', fields: { email: 'Cet e-mail est déjà utilisé.' } }); throw e; }
+  res.json({ user: publicUser({ ...req.user, ...set }) });
+}));
+
+// changement de mot de passe : l'ancien est exigé ; les autres appareils sont déconnectés
+app.put('/api/profile/password', requireAuth, authLimit, ah(async (req, res) => {
+  const current = String(req.body?.current ?? ''), next = String(req.body?.next ?? '');
+  if (!(await bcrypt.compare(current, req.user.password_hash))) return res.status(403).json({ error: 'Mot de passe actuel incorrect.', fields: { current: 'Mot de passe actuel incorrect.' } });
+  if (next.length < 8) return res.status(400).json({ error: 'Utilise au moins 8 caractères.', fields: { next: 'Utilise au moins 8 caractères.' } });
+  if (Buffer.byteLength(next) > 72) return res.status(400).json({ error: 'Le mot de passe est trop long (72 octets maximum).', fields: { next: 'Le mot de passe est trop long (72 octets maximum).' } });
+  if (next === current) return res.status(400).json({ error: 'Choisis un mot de passe différent de l\'actuel.', fields: { next: 'Choisis un mot de passe différent de l\'actuel.' } });
+  await users.updateOne({ _id: req.user._id }, { $set: { password_hash: await bcrypt.hash(next, 10) } });
+  const token = cookies(req)[COOKIE];
+  await sessions.deleteMany({ user_id: req.user._id, _id: { $ne: token ? sha(token) : null } });
+  res.json({ ok: true });
 }));
 
 // efface la progression (séances, historique, favoris) mais garde le compte, les objectifs et les réglages
@@ -754,7 +776,7 @@ async function purgeUser(uid) {
   await sbRemove(gone?.avatar_path);
   await Promise.all([logs.deleteMany({ user_id: uid }), runs.deleteMany({ user_id: uid }), favorites.deleteMany({ user_id: uid }),
     bookings.deleteMany({ user_id: uid }), activities.deleteMany({ user_id: uid }), posts.deleteMany({ user_id: uid }),
-    members.deleteMany({ user_id: uid }), eventMembers.deleteMany({ user_id: uid }), sessions.deleteMany({ user_id: uid })]);
+    members.deleteMany({ user_id: uid }), eventMembers.deleteMany({ user_id: uid }), sessions.deleteMany({ user_id: uid }), mealPlans.deleteMany({ coach_id: uid })]);
   const mine = (await challenges.find({ created_by: uid }).project({ _id: 1 }).toArray()).map((c) => c._id);
   if (mine.length) await Promise.all([members.deleteMany({ challenge_id: { $in: mine } }), challenges.deleteMany({ _id: { $in: mine } })]);
   await users.deleteOne({ _id: uid });
@@ -779,7 +801,18 @@ const userStatsMap = async (ids) => {
   const a = new Map(acts.map((r) => [String(r._id), r])), w = new Map(wk.map((r) => [String(r._id), r.n]));
   return (id) => { const r = a.get(String(id)); return { activities: r?.count ?? 0, distance: r?.distance ?? 0, duration: r?.duration ?? 0, steps: r?.steps ?? 0, lastActivity: r?.last ?? null, workouts: w.get(String(id)) ?? 0 }; };
 };
-const adminUserJson = (u, st) => ({ id: String(u._id), name: u.name, email: u.email, avatar: u.avatar_url || null, createdAt: u.created_at, admin: isAdmin(u), onboarded: !!u.onboarded, ...st(u._id) });
+const adminUserJson = (u, st) => ({ id: String(u._id), name: u.name, email: u.email, avatar: u.avatar_url || null, createdAt: u.created_at, admin: isAdmin(u), coach: isCoach(u), onboarded: !!u.onboarded, ...st(u._id) });
+
+// l'administrateur donne ou retire le rôle coach (un compte administrateur garde son rôle)
+app.put('/api/admin/users/:id/coach', requireAdmin, ah(async (req, res) => {
+  const id = toId(req.params.id);
+  const u = id && await users.findOne({ _id: id });
+  if (!u) return res.status(404).json({ error: 'Compte introuvable.' });
+  if (u.role === 'admin') return res.status(409).json({ error: 'Ce compte est administrateur : son rôle ne change pas ici.' });
+  if (typeof req.body?.coach !== 'boolean') return res.status(400).json({ error: 'Valeur invalide.' });
+  await users.updateOne({ _id: id }, req.body.coach ? { $set: { role: 'coach' } } : { $unset: { role: '' } });
+  res.json({ ok: true, coach: req.body.coach });
+}));
 
 app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
   res.set('Cache-Control', 'no-store');
@@ -912,9 +945,10 @@ async function workoutBody(b) {
   if (ex.length < 1 || ex.length > 40) return { error: 'Ajoute entre 1 et 40 exercices.' };
   const exercises = [];
   for (const e of ex) {
-    const name = cleanStr(e?.name, 1, 60), reps = intIn(e?.reps, 1, 1000), seconds = intIn(e?.seconds, 5, 3600);
+    const name = cleanStr(e?.name, 1, 60), reps = intIn(e?.reps, 1, 1000), seconds = intIn(e?.seconds, 5, 3600), exVideo = cleanUrl(e?.video);
     if (!name || reps == null || seconds == null) return { error: 'Chaque exercice a un nom, un nombre de répétitions et une durée (5 à 3600 s).' };
-    exercises.push({ name, reps, seconds });
+    if (exVideo === null) return { error: `Le lien vidéo de l'exercice « ${name} » n'est pas valide.` };
+    exercises.push({ name, reps, seconds, video: exVideo });
   }
   return { doc: { course_id: String(b.courseId), title, minutes, kcal, level: b.level, description, photo, video, goals: goalIds, exercises } };
 }
@@ -1032,6 +1066,48 @@ app.get('/api/trainers/:id', requireAuth, ah(async (req, res) => {
   const t = (await trainerList(req.user._id)).find((x) => x.id === req.params.id);
   if (!t) return res.status(404).json({ error: 'Coach introuvable.' });
   res.json({ trainer: t, slots: SLOTS });
+}));
+
+/* ----- coachs : planning alimentaire par jour ----- */
+const requireCoach = [requireAuth, (req, res, next) => (isCoach(req.user) ? next() : res.status(403).json({ error: 'Réservé aux coachs.' }))];
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const validDay = (d) => DAY_RE.test(d) && !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+const planJson = (p) => ({ day: p.day, meals: p.meals, updatedAt: p.updated_at });
+
+// mes plannings, entre deux jours (par défaut : à partir d'hier)
+app.get('/api/coach/plans', requireCoach, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const from = validDay(String(req.query.from ?? '')) ? String(req.query.from) : new Date(Date.now() - DAY).toISOString().slice(0, 10);
+  const to = validDay(String(req.query.to ?? '')) ? String(req.query.to) : new Date(Date.now() + 60 * DAY).toISOString().slice(0, 10);
+  const list = await mealPlans.find({ coach_id: req.user._id, day: { $gte: from, $lte: to } }).sort({ day: 1 }).limit(120).toArray();
+  res.json({ plans: list.map(planJson) });
+}));
+
+// crée ou remplace le planning d'un jour ; une liste vide l'efface
+app.put('/api/coach/plans/:day', requireCoach, ah(async (req, res) => {
+  const day = req.params.day;
+  if (!validDay(day)) return res.status(400).json({ error: 'Jour invalide.' });
+  const raw = Array.isArray(req.body?.meals) ? req.body.meals : null;
+  if (!raw || raw.length > 8) return res.status(400).json({ error: 'Ajoute au plus 8 repas.' });
+  const meals = [];
+  for (const m of raw) {
+    const label = cleanStr(m?.label, 1, 40), text = cleanStr(m?.text, 1, 600);
+    if (!label || !text) return res.status(400).json({ error: 'Chaque repas a un nom (40 caractères max) et un contenu (600 max).' });
+    meals.push({ label, text });
+  }
+  if (!meals.length) { await mealPlans.deleteOne({ coach_id: req.user._id, day }); return res.json({ plan: null }); }
+  const now = Date.now();
+  await mealPlans.updateOne({ coach_id: req.user._id, day }, { $set: { meals, updated_at: now }, $setOnInsert: { created_at: now } }, { upsert: true });
+  res.json({ plan: { day, meals, updatedAt: now } });
+}));
+
+// côté client : ce que les coachs proposent pour un jour
+app.get('/api/plans', requireAuth, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const day = validDay(String(req.query.day ?? '')) ? String(req.query.day) : new Date().toISOString().slice(0, 10);
+  const list = await mealPlans.find({ day }).sort({ updated_at: -1 }).limit(50).toArray();
+  const cards = new Map((await users.find({ _id: { $in: list.map((p) => p.coach_id) } }).project({ name: 1, avatar_url: 1 }).toArray()).map((u) => [String(u._id), u]));
+  res.json({ day, plans: list.filter((p) => cards.has(String(p.coach_id))).map((p) => ({ ...planJson(p), coach: { id: String(p.coach_id), name: cards.get(String(p.coach_id)).name, avatar: cards.get(String(p.coach_id)).avatar_url || null } })) });
 }));
 
 app.put('/api/bookings/:trainerId', requireAuth, ah(async (req, res) => {

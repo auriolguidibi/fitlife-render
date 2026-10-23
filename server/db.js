@@ -34,6 +34,7 @@ export const communities = db.collection('communities');
 export const communityMembers = db.collection('community_members');
 export const calls = db.collection('calls');                // appels vidéo de groupe et lives programmés
 export const activities = db.collection('activities');      // marche / course : durée, distance, pas, tracé GPS
+export const mealPlans = db.collection('meal_plans');       // planning alimentaire d'un coach pour un jour
 // catalogue
 export const goals = db.collection('goals');
 export const courses = db.collection('courses');
@@ -51,6 +52,8 @@ await Promise.all([
   runs.createIndex({ user_id: 1, status: 1 }),
   bookings.createIndex({ user_id: 1, trainer_id: 1 }, { unique: true }),
   activities.createIndex({ user_id: 1, started_at: -1 }),
+  mealPlans.createIndex({ coach_id: 1, day: 1 }, { unique: true }),
+  mealPlans.createIndex({ day: 1 }),
   events.createIndex({ starts_at: 1 }),
   eventMembers.createIndex({ event_id: 1, user_id: 1 }, { unique: true }),
   eventMembers.createIndex({ user_id: 1 }),

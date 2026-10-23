@@ -7,32 +7,33 @@ import RouteMap from '../components/RouteMap';
 import { TypePhoto, dateLabel, timeLabel } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
+import AccountForms from '../components/AccountForms';
 import { BackBtn, Empty, SearchBox } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, typeOf } from '../lib/tracker';
 
-/* barre du bas de l'espace administrateur : bouton central surélevé (Contenu) */
+/* barre du bas de l'espace administrateur : même barre que l'application */
+const ANAV = [['/admin', 'home', 'Aperçu', true], ['/admin/users', 'users', 'Comptes'], ['/admin/content', 'book', 'Contenu'], ['/admin/events', 'clock', 'Événements'], ['/admin/profile', 'user', 'Profil']];
 export function AdminNav() {
-  const cls = ({ isActive }) => 'anav' + (isActive ? ' on' : '');
   return (
-    <nav className="anavbar" aria-label="Espace administrateur">
-      <NavLink to="/admin" end className={cls}><Icon n="home" /><span>Aperçu</span></NavLink>
-      <NavLink to="/admin/users" className={cls}><Icon n="users" /><span>Comptes</span></NavLink>
-      <NavLink to="/admin/content" className={({ isActive }) => 'anav fab' + (isActive ? ' on' : '')}><i><Icon n="book" /></i><span>Contenu</span></NavLink>
-      <NavLink to="/admin/events" className={cls}><Icon n="clock" /><span>Événements</span></NavLink>
-      <NavLink to="/admin/profile" className={cls}><Icon n="user" /><span>Profil</span></NavLink>
+    <nav className="tabbar" aria-label="Espace administrateur">
+      {ANAV.map(([to, ic, label, end]) => (
+        <NavLink key={to} to={to} end={end} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} aria-label={label}><Icon n={ic} /><span className="tl">{label}</span></NavLink>
+      ))}
     </nav>
   );
 }
 
-export function AdminShell({ title = 'Administration', back, children }) {
+export function AdminShell({ title = 'Administration', sub, back, children }) {
   return (
-    <section className="page admin adm">
+    <section className="page admin">
       <div className="topbar">{back ? <BackBtn to={back} /> : <span className="sp" />}<h2>{title}</h2><span className="sp" /></div>
-      <div className="px">{children}</div>
+      <div className="px">{sub && <p className="asub">{sub}</p>}{children}</div>
       <AdminNav />
     </section>
   );
 }
+
+const RoleBadges = ({ u }) => <>{u.admin && <span className="best role">Admin</span>}{u.coach && <span className="best role coach">Coach</span>}</>;
 
 /* ---------------- profil de l'administrateur ---------------- */
 export function AdminProfile() {
@@ -40,14 +41,11 @@ export function AdminProfile() {
   const nav = useNavigate();
   const { dispatch } = useStore();
   const out = async () => { await logout(); dispatch({ type: 'reset' }); nav('/welcome', { replace: true }); };
-  const rows = [['Comptes', 'Voir tous les comptes et leurs parcours', '/admin/users'], ['Contenu', 'Séances, cours, coachs', '/admin/content'], ['Événements', 'Créer et suivre les inscriptions', '/admin/events']];
   return (
     <AdminShell title="Mon profil">
-      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><b>{user?.name}</b><small>{user?.email}</small></div></div>
-      <div className="amenu">
-        {rows.map(([t, s, to]) => <Link key={to} to={to} className="arow"><span><b>{t}</b><small>{s}</small></span><i aria-hidden="true">›</i></Link>)}
-        <button className="arow out" onClick={out}><span><b>Se déconnecter</b></span><i aria-hidden="true">›</i></button>
-      </div>
+      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Administrateur</small><b>{user?.name}</b><small>{user?.email}</small></div></div>
+      <AccountForms />
+      <button className="btn ghost" onClick={out}>Se déconnecter</button>
     </AdminShell>
   );
 }
@@ -66,26 +64,32 @@ export function AdminHome() {
   useEffect(load, [load]);
   const C = d?.counts;
   const cards = d ? [
-    ['Comptes', C.users, '/admin/users'], ['Activités', C.activities, '/admin/users'], ['Séances', C.workouts, '/admin/content'], ['Cours', C.courses, '/admin/content'],
-    ['Coachs', C.trainers, '/admin/content'], ['Événements', C.events, '/admin/events'], ['Défis', C.challenges], ['Publications', C.posts],
+    ['Comptes', C.users, 'users', '/admin/users'], ['Activités', C.activities, 'route', '/admin/users'], ['Séances', C.workouts, 'fire', '/admin/content'], ['Cours', C.courses, 'book', '/admin/content'],
+    ['Coachs (fiches)', C.trainers, 'star', '/admin/content'], ['Événements', C.events, 'clock', '/admin/events'], ['Défis', C.challenges, 'trophy'], ['Publications', C.posts, 'chat'],
   ] : [];
+  const shortcuts = [['Gérer les comptes', 'Voir chaque compte, ses activités et son parcours', 'users', '/admin/users'], ['Contenu', 'Séances (avec vidéos), cours, objectifs, coachs', 'book', '/admin/content'], ['Événements', 'Créer des événements et suivre les inscriptions', 'clock', '/admin/events']];
   return (
-    <AdminShell>
-      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Espace administrateur</small><b>{user?.name}</b></div></div>
+    <AdminShell sub="Vue d'ensemble de FitLife">
+      <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Bonjour</small><b>{user?.name}</b><small>Administrateur</small></div></div>
       {error ? <ErrorBox title="Impossible de charger l'aperçu" message={error} onRetry={load} /> : !d ? (
-        <div aria-busy="true" aria-label="Chargement"><div className="skeleton" style={{ height: 180, borderRadius: 26 }} /></div>
+        <div aria-busy="true" aria-label="Chargement"><div className="skeleton" style={{ height: 180, borderRadius: 16 }} /></div>
       ) : (
         <>
-          <div className="today atotals">
-            <div><small>Distance totale</small><b>{fmtKm(d.totals.distance)}<em> km</em></b></div>
-            <div><small>Temps total</small><b>{fmtDuration(d.totals.duration)}</b></div>
-            <div><small>Pas</small><b>{d.totals.steps.toLocaleString('fr')}</b></div>
+          <div className="kpis">
+            <div className="kpi"><small>Distance totale</small><b>{fmtKm(d.totals.distance)}<em> km</em></b></div>
+            <div className="kpi"><small>Temps total</small><b>{fmtDuration(d.totals.duration)}</b></div>
+            <div className="kpi"><small>Pas</small><b>{d.totals.steps.toLocaleString('fr')}</b></div>
           </div>
-          <p className="muted" style={{ textAlign: 'center' }}>Cette semaine : {d.week.users} {d.week.users === 1 ? 'nouveau compte' : 'nouveaux comptes'}, {d.week.activities} {d.week.activities === 1 ? 'activité' : 'activités'}.</p>
+          <div className="card weekcard"><b>Cette semaine</b><p className="muted">{d.week.users} {d.week.users === 1 ? 'nouveau compte' : 'nouveaux comptes'} · {d.week.activities} {d.week.activities === 1 ? 'activité enregistrée' : 'activités enregistrées'}</p></div>
           <div className="admin-grid">
-            {cards.map(([label, n, to]) => to
-              ? <Link key={label} to={to} className="stat-card"><b>{n}</b><small>{label}</small></Link>
-              : <div key={label} className="stat-card"><b>{n}</b><small>{label}</small></div>)}
+            {cards.map(([label, n, ic, to]) => {
+              const inner = <><i className="sc-ic"><Icon n={ic} /></i><b>{n}</b><small>{label}</small></>;
+              return to ? <Link key={label} to={to} className="stat-card">{inner}</Link> : <div key={label} className="stat-card">{inner}</div>;
+            })}
+          </div>
+          <h3 className="h3 ash">Accès rapides</h3>
+          <div className="alist">
+            {shortcuts.map(([t, s, ic, to]) => <Link key={to} to={to} className="alink"><i><Icon n={ic} /></i><span><b>{t}</b><small>{s}</small></span><em aria-hidden="true">›</em></Link>)}
           </div>
         </>
       )}
@@ -124,7 +128,7 @@ export function AdminUsers() {
               <Link key={u.id} to={`/admin/users/${u.id}`} className="row">
                 <Avatar name={u.name} src={u.avatar} size="sm" />
                 <div className="t">
-                  <b>{u.name}{u.admin && <span className="best" style={{ marginLeft: 6 }}>Admin</span>}</b>
+                  <b>{u.name}<RoleBadges u={u} /></b>
                   <small>{u.email}</small>
                   <small>{u.activities} {u.activities === 1 ? 'activité' : 'activités'} · {fmtKm(u.distance)} km · inscrit le {frDate(u.createdAt)}</small>
                 </div>
@@ -157,6 +161,9 @@ export function AdminUserDetail() {
     if (!window.confirm(`Remettre à zéro les activités de ${u.name} (${u.activities}) ? Cette action est définitive.`)) return;
     try { await api.admin.resetActivities(id); notify('Activités supprimées'); load(); } catch (e) { notify(e.message); }
   };
+  const toggleCoach = async () => {
+    try { const r = await api.admin.setCoach(id, !u.coach); notify(r.coach ? 'Rôle coach donné' : 'Rôle coach retiré'); load(); } catch (e) { notify(e.message); }
+  };
   const removeActivity = async (a) => {
     if (!window.confirm('Supprimer cette activité ?')) return;
     try { await api.admin.deleteActivity(a.id); notify('Activité supprimée'); load(); } catch (e) { notify(e.message); }
@@ -175,7 +182,7 @@ export function AdminUserDetail() {
           <div className="card">
             <div className="post-h">
               <Avatar name={u.name} src={u.avatar} size="sm" />
-              <div><b>{u.name}{u.admin && <span className="best" style={{ marginLeft: 6 }}>Admin</span>}</b><small>{u.email}</small></div>
+              <div><b>{u.name}<RoleBadges u={u} /></b><small>{u.email}</small></div>
             </div>
             <p className="muted" style={{ marginTop: 10 }}>
               Inscrit le {frDate(u.createdAt)} · {d.challenges} {d.challenges === 1 ? 'défi' : 'défis'} · {d.events} {d.events === 1 ? 'événement' : 'événements'} · {d.posts} {d.posts === 1 ? 'publication' : 'publications'}
@@ -203,6 +210,13 @@ export function AdminUserDetail() {
             )) : <Empty>Aucune activité enregistrée.</Empty>}
           </div>
 
+          {!u.admin && (
+            <div className="card rolecard">
+              <div className="card-h"><b>Rôle coach</b><small>{u.coach ? 'Activé' : 'Désactivé'}</small></div>
+              <p className="muted">Un coach publie son planning alimentaire, jour par jour, et lance des lives. Il garde son compte client.</p>
+              <button className={'btn small' + (u.coach ? ' ghost' : '')} onClick={toggleCoach}>{u.coach ? 'Retirer le rôle coach' : 'Donner le rôle coach'}</button>
+            </div>
+          )}
           <div className="admin-actions">
             {u.activities > 0 && <button className="btn ghost" onClick={reset}>Remettre à zéro les activités</button>}
             {!u.admin && <button className="btn ghost danger" onClick={removeUser}>Supprimer ce compte</button>}

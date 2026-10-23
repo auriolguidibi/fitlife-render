@@ -121,7 +121,7 @@ export function Session() {
 
   return (
     <section className={'sess' + (run ? '' : ' paused')}>
-      <Vid src={w.video} poster={w.photo} play={run} pos="center 30%" />
+      <Vid src={videoKind(e.video) === 'file' ? assetUrl(e.video) : w.video} poster={w.photo} play={run} pos="center 30%" />
       <div className="shade" />
       <div className="top">
         <button className="icon-btn glass back" onClick={quit} aria-label="Retour"><Icon n="back" /></button>

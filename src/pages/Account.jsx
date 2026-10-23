@@ -9,6 +9,7 @@ import { BackBtn, Empty, WorkoutRow } from '../components/ui';
 import { useSyncFavs } from '../components/RequireAuth';
 import { initials } from './Home';
 import AvatarPicker from '../components/AvatarPicker';
+import AccountForms from '../components/AccountForms';
 import Icon from '../components/Icon';
 import { assetUrl } from '../lib/media';
 
@@ -187,6 +188,8 @@ export function Profile() {
           <div className="tagrow">{d.goals.length ? d.goals.map((g) => <i key={g.id}>{g.label}</i>) : <i>Aucun objectif sélectionné</i>}</div>
         </div>
 
+        <AccountForms />
+
         <div className="card">
           <div className="card-h"><b>Historique</b><small>{d.recent.length || 0} dernières</small></div>
           {d.recent.length ? d.recent.map((r) => (
@@ -208,6 +211,14 @@ export function Profile() {
         <Link to="/history" className="row">
           <div className="t"><b>Mon historique</b><small>Activités, séances, publications, défis, événements</small></div>
         </Link>
+        <Link to="/plans" className="row">
+          <div className="t"><b>Planning alimentaire</b><small>Les repas proposés par les coachs, jour par jour</small></div>
+        </Link>
+        {user?.coach && (
+          <Link to="/coach" className="row admin-link">
+            <div className="t"><b>Espace coach</b><small>Planning alimentaire, lives</small></div>
+          </Link>
+        )}
         {user?.admin && (
           <Link to="/admin" className="row admin-link">
             <div className="t"><b>Espace administrateur</b><small>Comptes, parcours, contenu, événements</small></div>

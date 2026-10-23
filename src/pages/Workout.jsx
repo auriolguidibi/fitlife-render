@@ -11,6 +11,27 @@ import { useSyncFavs } from '../components/RequireAuth';
 const BASE = import.meta.env.BASE_URL;
 const withBase = (o) => ({ ...o, photo: assetUrl(o.photo) });
 
+/* Un exercice, avec sa vidéo de démonstration (lecteur intégré ou fichier) si l'admin en a ajouté une. */
+function ExerciseRow({ e, i }) {
+  const [open, setOpen] = useState(false);
+  const kind = videoKind(e.video);
+  const embed = embedUrl(e.video);
+  return (
+    <div className="ex-item">
+      <div className="ex-line"><em>{i + 1}</em>{e.name}<span>x{e.reps}</span>
+        {kind && <button type="button" className="ex-demo" aria-expanded={open} onClick={() => setOpen((o) => !o)}><Icon n="play" /> {open ? 'Masquer' : 'Voir'}</button>}
+      </div>
+      {open && kind && (
+        <div className="player ex-player">
+          {embed
+            ? <iframe src={embed} title={`Démonstration : ${e.name}`} loading="lazy" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" />
+            : <video src={assetUrl(e.video)} controls playsInline preload="metadata" />}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Workout() {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -74,7 +95,7 @@ export function Workout() {
           <p className="done-note"><Icon n="check" /> Tu as déjà fait cette séance {mine.count} fois · dernière fois le {new Date(mine.last).toLocaleDateString('fr', { month: 'short', day: 'numeric' })}</p>
         )}
         <h3 className="h3">Exercices</h3>
-        <div className="ex">{w.exercises.map((e, i) => <div key={e.name}><em>{i + 1}</em>{e.name}<span>x{e.reps}</span></div>)}</div>
+        <div className="ex">{w.exercises.map((e, i) => <ExerciseRow key={e.name + i} e={e} i={i} />)}</div>
         <Link to={`/session/${w.id}`} className="btn">C'est parti</Link>
         {related.length > 0 && (
           <>

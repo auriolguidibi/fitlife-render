@@ -19,6 +19,8 @@ import { Activity, ActivityDetail, ActivityLive } from './pages/Activity';
 import { Community } from './pages/Community';
 import Photo from './pages/Photo';
 import History from './pages/History';
+import Plans from './pages/Plans';
+import Coach from './pages/Coach';
 import Chat from './pages/Chat';
 import Call from './pages/Call';
 import CommunityPage, { CommunityNew } from './pages/CommunityPage';
@@ -74,6 +76,8 @@ export default function App() {
           <Route path="/session/:id" element={<RequireAuth><Session /></RequireAuth>} />
           <Route path="/summary/:id" element={<RequireAuth><Summary /></RequireAuth>} />
           <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
+          <Route path="/plans" element={<RequireAuth><Plans /></RequireAuth>} />
+          <Route path="/coach" element={<RequireAuth><Coach /></RequireAuth>} />
           <Route path="/social" element={<RequireAuth><SocialMessages /></RequireAuth>} />
           <Route path="/social/people" element={<RequireAuth><SocialPeople /></RequireAuth>} />
           <Route path="/social/communities" element={<RequireAuth><SocialCommunities /></RequireAuth>} />
