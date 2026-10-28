@@ -46,9 +46,9 @@ export function CoachHome() {
   }, []);
   const today = plans?.includes(localDay());
   const shortcuts = [
-    ['/coach/menus', '🍽️', today ? "Modifier le menu d'aujourd'hui" : "Publier le menu d'aujourd'hui", 'Petit-déjeuner, déjeuner, collation, dîner'],
-    ['/coach/live', '📡', 'Lancer un live', 'Lien YouTube / Vimeo ou vidéo dans ta communauté'],
-    ['/coach/profile', '👤', 'Mon compte', 'Nom, e-mail, mot de passe'],
+    ['/coach/menus', 'utensils', today ? "Modifier le menu d'aujourd'hui" : "Publier le menu d'aujourd'hui", 'Petit-déjeuner, déjeuner, collation, dîner'],
+    ['/coach/live', 'broadcast', 'Lancer un live', 'Lien YouTube / Vimeo ou vidéo dans ta communauté'],
+    ['/coach/profile', 'user', 'Mon compte', 'Nom, e-mail, mot de passe'],
   ];
   return (
     <CoachShell title="Espace coach" sub="Suivi alimentaire et lives pour tes membres">
@@ -59,11 +59,11 @@ export function CoachHome() {
         <div className="kpi"><small>Lives actifs</small><b>{lives === null ? '…' : lives.length}</b></div>
       </div>
       {plans && !today && (
-        <Link to="/coach/menus" className="menu-cta"><i aria-hidden="true">⏰</i><div><b>Le menu d'aujourd'hui n'est pas publié</b><small>Tes membres l'attendent sur leur accueil</small></div><em aria-hidden="true">›</em></Link>
+        <Link to="/coach/menus" className="menu-cta"><i aria-hidden="true"><Icon n="clock" /></i><div><b>Le menu d'aujourd'hui n'est pas publié</b><small>Tes membres l'attendent sur leur accueil</small></div><em aria-hidden="true"><Icon n="arrow" /></em></Link>
       )}
       <h3 className="h3 ash">Accès rapides</h3>
       <div className="alist">
-        {shortcuts.map(([to, em, t, s]) => <Link key={to} to={to} className="alink"><i aria-hidden="true">{em}</i><span><b>{t}</b><small>{s}</small></span><em aria-hidden="true">›</em></Link>)}
+        {shortcuts.map(([to, em, t, s]) => <Link key={to} to={to} className="alink"><i aria-hidden="true"><Icon n={em} /></i><span><b>{t}</b><small>{s}</small></span><em aria-hidden="true">›</em></Link>)}
       </div>
     </CoachShell>
   );

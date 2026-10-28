@@ -184,7 +184,7 @@ export function Summary() {
     <section className="page narrow summary">
       <div className="trophy"><Icon n="check" /></div>
       <h1 className="h1">Félicitations !</h1>
-      <p className="sub">{s.workout.title}{s.newBest && s.timesDone > 1 ? ' · nouveau record personnel 🎉' : ''}</p>
+      <p className="sub">{s.workout.title}{s.newBest && s.timesDone > 1 ? ' · nouveau record personnel' : ''}</p>
       <div className="stats">
         <div><b>{s.kcal}</b><small>kcal brûlées</small></div>
         <div><b>{mins}</b><small>Minutes</small></div>

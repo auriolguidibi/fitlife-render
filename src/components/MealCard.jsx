@@ -1,15 +1,16 @@
 import Avatar from './Avatar';
+import Icon from './Icon';
 
 /* Pictogramme d'un repas d'après son nom */
 const mealIcon = (label = '') => {
   const l = label.toLowerCase();
-  if (/petit|matin|r[eé]veil/.test(l)) return '🥣';
-  if (/collation|encas|snack/.test(l)) return '🍎';
-  if (/go[uû]ter|th[eé]|caf[eé]/.test(l)) return '🍌';
-  if (/d[eé]jeuner|midi/.test(l)) return '🥗';
-  if (/d[iî]ner|soir/.test(l)) return '🍲';
-  if (/eau|hydrat/.test(l)) return '💧';
-  return '🍽️';
+  if (/petit|matin|r[eé]veil/.test(l)) return 'bowl';
+  if (/collation|encas|snack/.test(l)) return 'apple';
+  if (/go[uû]ter|th[eé]|caf[eé]/.test(l)) return 'cup';
+  if (/d[eé]jeuner|midi/.test(l)) return 'utensils';
+  if (/d[iî]ner|soir/.test(l)) return 'bowl';
+  if (/eau|hydrat/.test(l)) return 'drop';
+  return 'utensils';
 };
 
 /* Menu d'une journée publié par un coach : en-tête coach + chronologie des repas */
@@ -25,7 +26,7 @@ export default function MealCard({ plan, day, compact }) {
       <ol className="mc-list">
         {meals.map((m, i) => (
           <li key={i}>
-            <i className="mc-ic" aria-hidden="true">{mealIcon(m.label)}</i>
+            <i className="mc-ic" aria-hidden="true"><Icon n={mealIcon(m.label)} /></i>
             <div><b>{m.label}</b><p>{m.text}</p></div>
           </li>
         ))}

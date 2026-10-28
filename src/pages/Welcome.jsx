@@ -6,6 +6,7 @@ import { useStore } from '../store';
 import { Vid } from '../components/Media';
 import AuthSheet from '../components/AuthSheet';
 import AuthForm from '../components/AuthForm';
+import Icon from '../components/Icon';
 import { assetUrl } from '../lib/media';
 
 const BASE = import.meta.env.BASE_URL;
@@ -69,9 +70,9 @@ export default function Welcome() {
               <h1>{content.titleLines.map((l, i) => <span key={i} className={i === content.titleLines.length - 1 ? 'hl' : ''}>{l}{i < content.titleLines.length - 1 && <br />}</span>)}</h1>
               <p>{content.subtitle}</p>
               <div className="wl-feats">
-                <div><i aria-hidden="true">🏋️</i><b>Séances guidées</b><small>Démonstrations animées de chaque exercice</small></div>
-                <div><i aria-hidden="true">📡</i><b>Lives avec ton coach</b><small>Préviens-toi dès qu'un direct démarre</small></div>
-                <div><i aria-hidden="true">🍽️</i><b>Menus du jour</b><small>Un suivi alimentaire signé de ton coach</small></div>
+                <div><i aria-hidden="true"><Icon n="dumbbell" /></i><b>Séances guidées</b><small>Démonstrations animées de chaque exercice</small></div>
+                <div><i aria-hidden="true"><Icon n="broadcast" /></i><b>Lives avec ton coach</b><small>Préviens-toi dès qu'un direct démarre</small></div>
+                <div><i aria-hidden="true"><Icon n="utensils" /></i><b>Menus du jour</b><small>Un suivi alimentaire signé de ton coach</small></div>
               </div>
             </div>
           )}
@@ -84,7 +85,7 @@ export default function Welcome() {
               <div className="skeleton" style={{ height: 320, borderRadius: 20 }} aria-busy="true" />
             ) : user ? (
               <div className="wl-back">
-                <span className="wl-wave" aria-hidden="true">👋</span>
+                <span className="wl-wave" aria-hidden="true"><Icon n="tick" /></span>
                 <h2>Content de te revoir, {first} !</h2>
                 <p>Ta session est toujours ouverte.</p>
                 <button className="af-submit" onClick={() => proceed(user)}>Continuer<span style={{ width: 8 }} /></button>
@@ -94,7 +95,7 @@ export default function Welcome() {
               <AuthForm inline initialMode="register" onDone={(u) => proceed(u)} />
             )}
           </div>
-          <p className="wl-legal">🔒 Tes données restent privées. Ton numéro sert uniquement à te prévenir des lives et des informations de ton coach.</p>
+          <p className="wl-legal"><Icon n="lock" /> Tes données restent privées. Ton numéro sert uniquement à te prévenir des lives et des informations de ton coach.</p>
         </div>
       </section>
     );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useStore } from '../store';
@@ -47,7 +48,7 @@ export function Events() {
                 <div className="ev-body">
                   <b>{ev.title}</b>
                   <small>{when(ev)}</small>
-                  {ev.place && <small>📍 {ev.place}</small>}
+                  {ev.place && <small className="with-ic"><Icon n="pin" /> {ev.place}</small>}
                   <small>{ev.participants} {ev.participants === 1 ? 'inscrit' : 'inscrits'}</small>
                 </div>
               </Link>
@@ -88,7 +89,7 @@ export function EventDetail() {
           {ev.image && <div className="ev-hero"><Img src={assetUrl(ev.image)} /></div>}
           <div className="card">
             <h1 className="h1" style={{ padding: 0, margin: '0 0 6px' }}>{ev.title}</h1>
-            <p className="muted">{when(ev)}{ev.place ? <><br />📍 {ev.place}</> : null}<br />{ev.participants} {ev.participants === 1 ? 'inscrit' : 'inscrits'}</p>
+            <p className="muted">{when(ev)}{ev.place ? <><br /><span className="with-ic"><Icon n="pin" /> {ev.place}</span></> : null}<br />{ev.participants} {ev.participants === 1 ? 'inscrit' : 'inscrits'}</p>
             {ev.description && <p className="ev-desc">{ev.description}</p>}
           </div>
           {isOver(ev) ? <p className="muted" style={{ textAlign: 'center' }}>Cet événement est terminé.</p>

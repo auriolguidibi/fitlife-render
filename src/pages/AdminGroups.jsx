@@ -123,7 +123,7 @@ function GroupDetail({ id, onBack, onEdit, onDeleted }) {
       <div className="card">
         <div className="card-h"><b>Membres</b><button className="mini-btn" onClick={() => onEdit(d)}>Modifier</button></div>
         {d.members.length ? d.members.map((m) => (
-          <div key={m.id} className="grp-m"><b>{m.name}</b><small>{m.email}</small><small>{m.phone ? <a href={`tel:${m.phone}`}>📞 {m.phone}</a> : 'Numéro non renseigné'}</small></div>
+          <div key={m.id} className="grp-m"><b>{m.name}</b><small>{m.email}</small><small>{m.phone ? <a href={`tel:${m.phone}`}><Icon n="phone" /> {m.phone}</a> : 'Numéro non renseigné'}</small></div>
         )) : <p className="muted">Ce groupe est vide. Ajoute des membres avec « Modifier ».</p>}
       </div>
 
@@ -158,7 +158,7 @@ export function AdminGroups() {
             <div className="lst grid" style={{ marginTop: 14 }}>
               {!groups ? <div className="row skeleton" /> : groups.length ? groups.map((g) => (
                 <button key={g.id} className="row grp-row" onClick={() => setView({ kind: 'detail', id: g.id })}>
-                  <i className="grp-ic" aria-hidden="true">👥</i>
+                  <i className="grp-ic" aria-hidden="true"><Icon n="users" /></i>
                   <div className="t"><b>{g.name}</b><small>{g.count} membre{g.count > 1 ? 's' : ''}{g.messages ? ` · ${g.messages} information${g.messages > 1 ? 's' : ''} envoyée${g.messages > 1 ? 's' : ''}` : ''}</small>{g.lastText && <small>Dernière : {g.lastText}</small>}</div>
                 </button>
               )) : <Empty>Aucun groupe pour le moment.<br />Crée-en un pour contacter tes inscrits.</Empty>}

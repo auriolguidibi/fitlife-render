@@ -159,7 +159,7 @@ export function AdminUsers() {
                 <div className="t">
                   <b>{u.name}<RoleBadges u={u} /></b>
                   <small>{u.email}</small>
-                  <small className={u.phone ? 'ph' : 'ph none'}>{u.phone ? `📞 ${u.phone}` : '📞 numéro non renseigné'}</small>
+                  <small className={u.phone ? 'ph' : 'ph none'}><Icon n="phone" /> {u.phone || 'numéro non renseigné'}</small>
                   <small>{u.activities} {u.activities === 1 ? 'activité' : 'activités'} · {fmtKm(u.distance)} km · inscrit le {frDate(u.createdAt)}</small>
                 </div>
               </Link>
@@ -212,7 +212,7 @@ export function AdminUserDetail() {
           <div className="card">
             <div className="post-h">
               <Avatar name={u.name} src={u.avatar} size="sm" />
-              <div><b>{u.name}<RoleBadges u={u} /></b><small>{u.email}</small>{u.phone && <small>📞 {u.phone}</small>}{u.username && <small>Identifiant : {u.username}</small>}</div>
+              <div><b>{u.name}<RoleBadges u={u} /></b><small>{u.email}</small>{u.phone && <small className="ph"><Icon n="phone" /> {u.phone}</small>}{u.username && <small>Identifiant : {u.username}</small>}</div>
             </div>
             <p className="muted" style={{ marginTop: 10 }}>
               Inscrit le {frDate(u.createdAt)} · {d.challenges} {d.challenges === 1 ? 'défi' : 'défis'} · {d.events} {d.events === 1 ? 'événement' : 'événements'} · {d.posts} {d.posts === 1 ? 'publication' : 'publications'}

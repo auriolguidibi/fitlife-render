@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import MealCard from './MealCard';
+import Icon from './Icon';
 import { localDay } from '../pages/Plans';
 
 /* Accueil : le menu du jour publié par les coachs (suivi alimentaire) */
@@ -16,9 +17,9 @@ export default function MenuHome() {
     // pas de menu : le coach est invité à le publier, les membres ne voient rien de vide
     return user?.coach ? (
       <Link to="/coach" className="menu-cta">
-        <i aria-hidden="true">🍽️</i>
+        <i aria-hidden="true"><Icon n="utensils" /></i>
         <div><b>Publie le menu du jour</b><small>Tes membres attendent le suivi alimentaire d'aujourd'hui</small></div>
-        <em aria-hidden="true">›</em>
+        <em aria-hidden="true"><Icon n="arrow" /></em>
       </Link>
     ) : null;
   }

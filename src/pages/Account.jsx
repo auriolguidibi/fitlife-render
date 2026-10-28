@@ -134,11 +134,11 @@ export function Profile() {
   const role = user?.admin ? 'Administrateur' : user?.coach ? 'Coach' : 'Membre';
   const hours = Math.floor(d.stats.minutes / 60);
   const shortcuts = [
-    ['/plans', '🍽️', 'Suivi alimentaire', 'Menus des coachs'],
-    ['/history', '🕘', 'Historique', 'Toute mon activité'],
-    ['/favorites', '❤️', 'Favoris', 'Mes séances préférées'],
-    ['/notifications', '🔔', 'Notifications', 'Lives, menus, défis'],
-    ...(user?.admin ? [['/admin', '🛡️', 'Administration', 'Comptes, contenu']] : []),
+    ['/plans', 'utensils', 'Suivi alimentaire', 'Menus des coachs'],
+    ['/history', 'history', 'Historique', 'Toute mon activité'],
+    ['/favorites', 'heart', 'Favoris', 'Mes séances préférées'],
+    ['/notifications', 'bell', 'Notifications', 'Lives, menus, défis'],
+    ...(user?.admin ? [['/admin', 'shield', 'Administration', 'Comptes, contenu']] : []),
   ];
   return (
     <section className="page pf">
@@ -167,7 +167,7 @@ export function Profile() {
         <h3 className="pf-h">Raccourcis</h3>
         <div className="pf-tiles">
           {shortcuts.map(([to, em, t, sub]) => (
-            <Link key={to} to={to} className="pf-tile"><i aria-hidden="true">{em}</i><b>{t}</b><small>{sub}</small></Link>
+            <Link key={to} to={to} className="pf-tile"><i aria-hidden="true"><Icon n={em} /></i><b>{t}</b><small>{sub}</small></Link>
           ))}
         </div>
 

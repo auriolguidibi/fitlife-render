@@ -667,3 +667,19 @@ html,body{background:#05070c}
 .contacts-bar div{display:flex;gap:8px;flex-wrap:wrap}
 .admin .row .t small.ph{color:#cfe9d6;font-weight:600}
 .admin .row .t small.ph.none{color:var(--mut);font-weight:400}
+
+/* vraies icônes vectorielles à la place des émojis */
+.mc-ic,.nf-ic,.pf-tile i,.grp-ic,.menu-cta>i,.alink>i,.wl-feats i{color:var(--lime)}
+.mc-ic .ic{font-size:22px}
+.nf-ic .ic{font-size:23px}
+.pf-tile i .ic{font-size:26px}
+.grp-ic .ic{font-size:23px}
+.menu-cta>i .ic{font-size:30px}
+.menu-cta em .ic{font-size:20px}
+.alink>i .ic{font-size:20px}
+.wl-feats i .ic{font-size:28px;margin-bottom:2px}
+.wl-wave{display:grid;place-items:center;width:76px;height:76px;margin:0 auto 14px;border-radius:50%;background:color-mix(in srgb,var(--lime) 16%,transparent);color:var(--lime)}
+.wl-wave .ic{font-size:40px}
+.wl-legal .ic{vertical-align:-2px;margin-right:4px}
+small.ph .ic,.grp-m a .ic,.with-ic .ic{font-size:13px;vertical-align:-2px;margin-right:3px}
+.grp-m a{display:inline-flex;align-items:center}
