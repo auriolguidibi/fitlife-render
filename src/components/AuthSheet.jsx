@@ -3,11 +3,13 @@ import { useAuth } from '../auth';
 import Icon from './Icon';
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
+const phoneOk = (s) => /^\+?[\d\s().-]{6,24}$/.test(s.trim()) && s.replace(/\D/g, '').length >= 6 && s.replace(/\D/g, '').length <= 15;
 
 function validate(mode, v) {
   const f = {};
   if (mode === 'register' && (!v.name.trim() || v.name.trim().length > 40)) f.name = 'Entre ton nom (40 caractères maximum).';
-  if (!EMAIL.test(v.email.trim())) f.email = 'Entre une adresse e-mail valide.';
+  if (mode === 'register' ? !EMAIL.test(v.email.trim()) : !v.email.trim()) f.email = mode === 'register' ? 'Entre une adresse e-mail valide.' : 'Entre ton e-mail ou ton identifiant.';
+  if (mode === 'register' && !phoneOk(v.phone)) f.phone = 'Entre un numéro de téléphone valide (ex. +225 07 00 00 00 00).';
   if (mode === 'register' ? v.password.length < 8 : !v.password) f.password = mode === 'register' ? 'Utilise au moins 8 caractères.' : 'Entre ton mot de passe.';
   return f;
 }
@@ -26,7 +28,7 @@ export default function AuthSheet({ initialMode, onClose, onDone }) {
   const { register, login } = useAuth();
   const uid = useId();
   const [mode, setMode] = useState(initialMode);
-  const [v, setV] = useState({ name: '', email: '', password: '' });
+  const [v, setV] = useState({ name: '', email: '', phone: '', password: '' });
   const [errs, setErrs] = useState({});
   const [formErr, setFormErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -64,7 +66,7 @@ export default function AuthSheet({ initialMode, onClose, onDone }) {
     setBusy(true);
     try {
       const u = mode === 'register'
-        ? await register({ name: v.name.trim(), email: v.email.trim(), password: v.password })
+        ? await register({ name: v.name.trim(), email: v.email.trim(), phone: v.phone.trim(), password: v.password })
         : await login({ email: v.email.trim(), password: v.password });
       onDone(u);
     } catch (err) {
@@ -95,9 +97,14 @@ export default function AuthSheet({ initialMode, onClose, onDone }) {
               <input id={uid + 'n'} value={v.name} onChange={set('name')} autoComplete="name" maxLength={40} aria-invalid={!!errs.name} aria-describedby={errs.name ? uid + 'n-e' : undefined} placeholder="Ton nom" />
             </Field>
           )}
-          <Field id={uid + 'm'} label="E-mail" error={errs.email}>
-            <input id={uid + 'm'} type="email" value={v.email} onChange={set('email')} autoComplete="email" inputMode="email" aria-invalid={!!errs.email} aria-describedby={errs.email ? uid + 'm-e' : undefined} placeholder="toi@exemple.com" />
+          <Field id={uid + 'm'} label={reg ? 'E-mail' : 'E-mail ou identifiant'} error={errs.email}>
+            <input id={uid + 'm'} type={reg ? 'email' : 'text'} value={v.email} onChange={set('email')} autoComplete="email" inputMode="email" aria-invalid={!!errs.email} aria-describedby={errs.email ? uid + 'm-e' : undefined} placeholder="toi@exemple.com" />
           </Field>
+          {reg && (
+            <Field id={uid + 't'} label="Numéro de téléphone" error={errs.phone}>
+              <input id={uid + 't'} type="tel" value={v.phone} onChange={set('phone')} autoComplete="tel" inputMode="tel" maxLength={24} aria-invalid={!!errs.phone} placeholder="+225 07 00 00 00 00" />
+            </Field>
+          )}
           <Field id={uid + 'p'} label="Mot de passe" error={errs.password}>
             <div className="pw">
               <input id={uid + 'p'} type={show ? 'text' : 'password'} value={v.password} onChange={set('password')} autoComplete={reg ? 'new-password' : 'current-password'} aria-invalid={!!errs.password} aria-describedby={errs.password ? uid + 'p-e' : undefined} placeholder={reg ? 'Au moins 8 caractères' : 'Ton mot de passe'} />

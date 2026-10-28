@@ -6,6 +6,7 @@ import { useStore } from '../store';
 import Avatar from '../components/Avatar';
 import AccountForms from '../components/AccountForms';
 import Icon from '../components/Icon';
+import { SideBrand } from '../components/ui';
 import { PlanTab } from './Coach';
 import { LiveTools } from './AdminCoach';
 import { localDay } from './Plans';
@@ -16,6 +17,7 @@ const CNAV = [['/coach', 'home', 'Aperçu', true], ['/coach/menus', 'book', 'Men
 export function CoachNav() {
   return (
     <nav className="tabbar" aria-label="Espace coach">
+      <SideBrand />
       {CNAV.map(([to, ic, label, end]) => (
         <NavLink key={to} to={to} end={end} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} aria-label={label}><Icon n={ic} /><span className="tl">{label}</span></NavLink>
       ))}

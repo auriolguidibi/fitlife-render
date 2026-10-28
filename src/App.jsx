@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { connect, disconnect } from './lib/realtime';
 import useUnread from './lib/useUnread';
-import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { THEMES } from './data';
 import { useStore } from './store';
 import { useAuth } from './auth';
 import Icon from './components/Icon';
+import Avatar from './components/Avatar';
+import { SideBrand } from './components/ui';
 import { Goals } from './pages/Onboarding';
 import Welcome from './pages/Welcome';
 import RequireAuth, { RequireAdmin, RequireCoach } from './components/RequireAuth';
@@ -33,6 +35,7 @@ import { AdminActivity, AdminHome, AdminProfile, AdminUserDetail, AdminUsers } f
 import { AdminContent } from './pages/AdminContent';
 import { AdminEvents } from './pages/AdminEvents';
 import { AdminCoach } from './pages/AdminCoach';
+import { AdminGroups } from './pages/AdminGroups';
 import { ChallengeDetail, ChallengeNew, Challenges } from './pages/Challenges';
 
 const NAV = [
@@ -41,15 +44,27 @@ const NAV = [
 ];
 const BARE = ['/welcome', '/goals', '/admin', '/coach', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
 
+function NavUser() {
+  const { user } = useAuth();
+  if (!user) return null;
+  return (
+    <Link to="/profile" className="side-user">
+      <Avatar name={user.name} src={user.avatar} size="sm" />
+      <span><b>{user.name}</b><small>Mon profil</small></span>
+    </Link>
+  );
+}
+
 function Nav({ unread, admin }) {
   return (
     <nav className="tabbar" aria-label="Principal">
-      <div className="side-brand" aria-hidden="true"><img src="/logo.png" alt="" width="34" height="34" /><span>Fit<b>Life</b></span></div>
+      <SideBrand />
       {NAV.map(([to, ic, label, only]) => (
         <NavLink key={to} to={to} className={({ isActive }) => 'tab' + (only ? ' side-only' : '') + (isActive ? ' on' : '')} aria-label={label}>
           <Icon n={ic} /><span className="tl">{label}</span>{ic === 'chat' && unread > 0 && <b className="badge" aria-label={`${unread} non lu${unread > 1 ? 's' : ''}`}>{unread > 9 ? '9+' : unread}</b>}
         </NavLink>
       ))}
+      <NavUser />
       {admin && <NavLink to="/admin" className={({ isActive }) => 'tab side-only' + (isActive ? ' on' : '')}><Icon n="star" /><span className="tl">Admin</span></NavLink>}
     </nav>
   );
@@ -107,6 +122,7 @@ export default function App() {
           <Route path="/admin/activities/:id" element={<RequireAdmin><AdminActivity /></RequireAdmin>} />
           <Route path="/admin/content" element={<RequireAdmin><AdminContent /></RequireAdmin>} />
           <Route path="/admin/events" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
+          <Route path="/admin/groups" element={<RequireAdmin><AdminGroups /></RequireAdmin>} />
           <Route path="/admin/coach" element={<RequireAdmin><AdminCoach /></RequireAdmin>} />
           <Route path="/activity/community" element={<RequireAuth><Community /></RequireAuth>} />
           <Route path="/activity/challenges" element={<RequireAuth><Challenges /></RequireAuth>} />

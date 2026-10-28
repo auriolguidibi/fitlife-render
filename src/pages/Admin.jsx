@@ -8,7 +8,7 @@ import { TypePhoto, dateLabel, timeLabel } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import AccountForms from '../components/AccountForms';
-import { BackBtn, Empty, SearchBox } from '../components/ui';
+import { BackBtn, Empty, SearchBox, SideBrand } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, typeOf } from '../lib/tracker';
 
 /* barre du bas de l'espace administrateur : même barre que l'application */
@@ -16,6 +16,7 @@ const ANAV = [['/admin', 'home', 'Aperçu', true], ['/admin/users', 'users', 'Co
 export function AdminNav() {
   return (
     <nav className="tabbar" aria-label="Espace administrateur">
+      <SideBrand />
       {ANAV.map(([to, ic, label, end]) => (
         <NavLink key={to} to={to} end={end} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} aria-label={label}><Icon n={ic} /><span className="tl">{label}</span></NavLink>
       ))}
@@ -67,7 +68,7 @@ export function AdminHome() {
     ['Comptes', C.users, 'users', '/admin/users'], ['Activités', C.activities, 'route', '/admin/users'], ['Séances', C.workouts, 'fire', '/admin/content'], ['Cours', C.courses, 'book', '/admin/content'],
     ['Coachs (fiches)', C.trainers, 'star', '/admin/content'], ['Événements', C.events, 'clock', '/admin/events'], ['Défis', C.challenges, 'trophy'], ['Publications', C.posts, 'chat'],
   ] : [];
-  const shortcuts = [['Gérer les comptes', 'Voir chaque compte, ses activités et son parcours', 'users', '/admin/users'], ['Contenu', 'Séances (avec vidéos), cours, objectifs, coachs', 'book', '/admin/content'], ['Événements', 'Créer des événements et suivre les inscriptions', 'clock', '/admin/events'], ['Live & menus', "Publier le menu du jour ou lancer un live à la place d'un coach", 'video', '/admin/coach']];
+  const shortcuts = [['Gérer les comptes', 'Voir chaque compte, ses activités et son parcours', 'users', '/admin/users'], ['Contenu', 'Séances (avec vidéos), cours, objectifs, coachs', 'book', '/admin/content'], ['Événements', 'Créer des événements et suivre les inscriptions', 'clock', '/admin/events'], ['Groupes d\'information', 'Regrouper des inscrits (e-mail, numéro) et leur envoyer des infos', 'users', '/admin/groups'], ['Live & menus', "Publier le menu du jour ou lancer un live à la place d'un coach", 'video', '/admin/coach']];
   return (
     <AdminShell sub="Vue d'ensemble de FitLife">
       <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Bonjour</small><b>{user?.name}</b><small>Administrateur</small></div></div>
@@ -117,7 +118,8 @@ export function AdminUsers() {
 
   return (
     <AdminShell title="Comptes">
-      <SearchBox value={q} onChange={setQ} placeholder="Rechercher un nom ou un e-mail" />
+      <Link to="/admin/groups" className="btn ghost small" style={{ marginBottom: 10 }}>Groupes d'information</Link>
+      <SearchBox value={q} onChange={setQ} placeholder="Rechercher un nom, e-mail ou numéro" />
       {error ? <ErrorBox title="Impossible de charger les comptes" message={error} onRetry={() => load(q)} /> : !d ? (
         <div className="lst" aria-busy="true" aria-label="Chargement" style={{ marginTop: 14 }}><div className="row skeleton" /><div className="row skeleton" /></div>
       ) : (
@@ -129,7 +131,7 @@ export function AdminUsers() {
                 <Avatar name={u.name} src={u.avatar} size="sm" />
                 <div className="t">
                   <b>{u.name}<RoleBadges u={u} /></b>
-                  <small>{u.email}</small>
+                  <small>{u.email}{u.phone ? ` · ${u.phone}` : ''}</small>
                   <small>{u.activities} {u.activities === 1 ? 'activité' : 'activités'} · {fmtKm(u.distance)} km · inscrit le {frDate(u.createdAt)}</small>
                 </div>
               </Link>
@@ -182,7 +184,7 @@ export function AdminUserDetail() {
           <div className="card">
             <div className="post-h">
               <Avatar name={u.name} src={u.avatar} size="sm" />
-              <div><b>{u.name}<RoleBadges u={u} /></b><small>{u.email}</small></div>
+              <div><b>{u.name}<RoleBadges u={u} /></b><small>{u.email}</small>{u.phone && <small>📞 {u.phone}</small>}{u.username && <small>Identifiant : {u.username}</small>}</div>
             </div>
             <p className="muted" style={{ marginTop: 10 }}>
               Inscrit le {frDate(u.createdAt)} · {d.challenges} {d.challenges === 1 ? 'défi' : 'défis'} · {d.events} {d.events === 1 ? 'événement' : 'événements'} · {d.posts} {d.posts === 1 ? 'publication' : 'publications'}

@@ -69,7 +69,6 @@ export default function Home() {
   if (!user) return <Navigate to="/welcome" replace />;
   if (user.admin) return <Navigate to="/admin" replace />;   // l'équipe a ses propres espaces
   if (user.coach) return <Navigate to="/coach" replace />;
-  if (user.admin) return <Navigate to="/admin" replace />;
   if (!user.onboarded) return <Navigate to="/goals" replace />;
 
   const pct = data ? Math.min(100, Math.round((data.today.kcal / data.today.goal) * 100)) : 0;
@@ -103,69 +102,34 @@ export default function Home() {
             : <Empty>Aucune séance ne correspond à « {q.trim()} ».</Empty>}
         </div>
       ) : (
-        <>
-          <div className="today px">
-            <Ring value={data.today.kcal} max={data.today.goal}><b>{pct}%</b></Ring>
-            <div className="today-t">
-              <b>Objectif du jour</b>
-              <span>{data.today.kcal} / {data.today.goal} kcal</span>
-              <small><Icon n="flame" /> {data.totals.streak} {data.totals.streak === 1 ? 'jour' : 'jours'} d'affilée · {data.totals.workouts} {data.totals.workouts === 1 ? 'séance' : 'séances'}</small>
-            </div>
-          </div>
-
-          {!user.avatar && !skippedPhoto() && (
-            <Link to="/photo" className="row act-cta px-card">
-              <Avatar name={user.name} />
-              <div className="t"><b>Ajoute ta photo de profil</b><small>Pour que les autres te reconnaissent</small></div>
-            </Link>
-          )}
-          {user.admin && (
-            <Link to="/admin" className="row act-cta px-card admin-link">
-              <div className="t"><b>Espace administrateur</b><small>Comptes, parcours, contenu, événements</small></div>
-            </Link>
-          )}
-          <Link to="/activity" className="row act-cta px-card">
-            <div className="thumb"><TypePhoto type="run" /></div>
-            <div className="t"><b>Marche ou course</b><small>Suis ton parcours, relève des défis, partage tes résultats</small></div>
-          </Link>
-
-          <MenuHome />
-          <NewsHome />
-
-          {data.courses.length > 0 && (
-            <div className="chips px" aria-label="Cours">
-              <Link to="/news" className="chip on">Actualités</Link>
-              <Link to="/favorites" className="chip">Favoris</Link>
-              {data.courses.map((c) => <Link key={c.id} to={`/courses/${c.id}`} className="chip">{c.name}</Link>)}
-            </div>
-          )}
-
-          {data.recommended.length > 0 && (
-            <>
-              <div className="sec px"><h3>À la une</h3></div>
-              <div className="feat-stack px">
-                <WorkoutCard w={withBase(data.recommended[0])} />
-                {moreFeat && data.recommended.slice(1).map((w) => <WorkoutCard key={w.id} w={withBase(w)} />)}
+        <div className="home-dash">
+          <div className="hd-side">
+            <div className="b-today today px">
+              <Ring value={data.today.kcal} max={data.today.goal}><b>{pct}%</b></Ring>
+              <div className="today-t">
+                <b>Objectif du jour</b>
+                <span>{data.today.kcal} / {data.today.goal} kcal</span>
+                <small><Icon n="flame" /> {data.totals.streak} {data.totals.streak === 1 ? 'jour' : 'jours'} d'affilée · {data.totals.workouts} {data.totals.workouts === 1 ? 'séance' : 'séances'}</small>
               </div>
-              {data.recommended.length > 1 && (
-                <div className="px"><button className="btn ghost small more-btn" aria-expanded={moreFeat} onClick={() => setMoreFeat((v) => !v)}>
-                  {moreFeat ? 'Voir moins' : `Voir plus (${data.recommended.length - 1})`}
-                </button></div>
+            </div>
+
+            <div className="b-cta">
+              {!user.avatar && !skippedPhoto() && (
+                <Link to="/photo" className="row act-cta px-card">
+                  <Avatar name={user.name} />
+                  <div className="t"><b>Ajoute ta photo de profil</b><small>Pour que les autres te reconnaissent</small></div>
+                </Link>
               )}
-            </>
-          )}
-          {!data.recommended.length && !data.courses.length && <Empty>Aucune séance n'a encore été ajoutée.<br />Reviens bientôt.</Empty>}
+              <Link to="/activity" className="row act-cta px-card">
+                <div className="thumb"><TypePhoto type="run" /></div>
+                <div className="t"><b>Marche ou course</b><small>Suis ton parcours, relève des défis, partage tes résultats</small></div>
+              </Link>
+            </div>
 
-          <div className="home-cols">
-            {data.courses.length > 0 && (
-              <div>
-                <div className="sec px"><h3>Cours</h3><Link to="/courses">Tout voir</Link></div>
-                <div className="lst grid px">{data.courses.slice(0, 3).map((c) => <CourseRow key={c.id} c={withBase(c)} />)}</div>
-              </div>
-            )}
+            <div className="b-menu"><MenuHome /></div>
 
             {data.recent.length > 0 && (
-              <div>
+              <div className="b-recent">
                 <div className="sec px"><h3>Séances récentes</h3><Link to="/profile">Tout voir</Link></div>
                 <div className="lst grid px">
                   {data.recent.map((e) => (
@@ -178,7 +142,42 @@ export default function Home() {
               </div>
             )}
           </div>
-        </>
+
+          <div className="hd-main">
+            <div className="b-news"><NewsHome /></div>
+
+            {data.courses.length > 0 && (
+              <div className="b-chips chips px" aria-label="Cours">
+                <Link to="/news" className="chip on">Actualités</Link>
+                <Link to="/favorites" className="chip">Favoris</Link>
+                {data.courses.map((c) => <Link key={c.id} to={`/courses/${c.id}`} className="chip">{c.name}</Link>)}
+              </div>
+            )}
+
+            {data.recommended.length > 0 && (
+              <div className="b-feat">
+                <div className="sec px"><h3>À la une</h3></div>
+                <div className="feat-stack px">
+                  <WorkoutCard w={withBase(data.recommended[0])} />
+                  {moreFeat && data.recommended.slice(1).map((w) => <WorkoutCard key={w.id} w={withBase(w)} />)}
+                </div>
+                {data.recommended.length > 1 && (
+                  <div className="px"><button className="btn ghost small more-btn" aria-expanded={moreFeat} onClick={() => setMoreFeat((v) => !v)}>
+                    {moreFeat ? 'Voir moins' : `Voir plus (${data.recommended.length - 1})`}
+                  </button></div>
+                )}
+              </div>
+            )}
+            {!data.recommended.length && !data.courses.length && <Empty>Aucune séance n'a encore été ajoutée.<br />Reviens bientôt.</Empty>}
+
+            {data.courses.length > 0 && (
+              <div className="b-courses">
+                <div className="sec px"><h3>Cours</h3><Link to="/courses">Tout voir</Link></div>
+                <div className="lst grid px">{data.courses.slice(0, 3).map((c) => <CourseRow key={c.id} c={withBase(c)} />)}</div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );

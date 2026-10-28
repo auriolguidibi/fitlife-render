@@ -33,6 +33,8 @@ export const messages = db.collection('messages');
 export const communities = db.collection('communities');
 export const communityMembers = db.collection('community_members');
 export const calls = db.collection('calls');                // appels vidéo de groupe et lives programmés
+export const groups = db.collection('broadcast_groups');       // groupes d'information créés par l'admin
+export const groupMsgs = db.collection('broadcast_msgs');    // informations envoyées aux membres d'un groupe
 export const lives = db.collection('lives');                // lives annoncés / intégrés par l'admin ou un coach
 export const activities = db.collection('activities');      // marche / course : durée, distance, pas, tracé GPS
 export const mealPlans = db.collection('meal_plans');       // planning alimentaire d'un coach pour un jour
@@ -82,6 +84,9 @@ await Promise.all([
   members.createIndex({ user_id: 1 }),
   workouts.createIndex({ course_id: 1, position: 1 }),
   lives.createIndex({ starts_at: -1 }),
+  groups.createIndex({ member_ids: 1 }),
+  groupMsgs.createIndex({ group_id: 1, created_at: -1 }),
+  users.createIndex({ username: 1 }, { unique: true, partialFilterExpression: { username: { $type: 'string' } } }),
 ]);
 
 /* ---------- catalogue : objectifs, cours, séances (ajoutés seulement s'ils n'existent pas) ---------- */

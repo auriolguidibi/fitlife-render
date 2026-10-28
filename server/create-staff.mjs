@@ -1,6 +1,6 @@
 /* Crée (ou promeut) les comptes de l'équipe : administrateurs et coachs.
    Usage :  npm run staff -- role:email:Nom [role:email:Nom ...]
-   Exemple : npm run staff -- admin:auriol@exemple.com:Auriol coach:may@exemple.com:May
+   Exemple : npm run staff -- admin:auroladmin:Auriol admin:marcadmin:Marc coach:maycoach:May
    Les mots de passe sont générés ici et affichés une seule fois ; changez-les ensuite dans « Mon compte ».
    Un compte déjà existant garde son mot de passe : seul son rôle est mis à jour (ajoutez --reset pour en générer un nouveau). */
 import bcrypt from 'bcryptjs';
@@ -15,8 +15,13 @@ if (!uri) { console.error('MONGODB_URI est absent : lancez la commande depuis le
 
 const args = process.argv.slice(2);
 const reset = args.includes('--reset');
-const specs = args.filter((a) => !a.startsWith('--')).map((a) => { const [role, email, ...n] = a.split(':'); return { role, email: (email || '').trim().toLowerCase(), name: n.join(':').trim() }; });
-if (!specs.length) { console.error('Aucun compte indiqué. Exemple : npm run staff -- admin:auriol@exemple.com:Auriol coach:may@exemple.com:May'); process.exit(1); }
+// « role:identifiant:Nom » (ex. admin:auroladmin:Auriol) ou « role:e-mail:Nom » ; sans @, l'e-mail devient identifiant@fitlife.app
+const specs = args.filter((a) => !a.startsWith('--')).map((a) => {
+  const [role, id, ...n] = a.split(':');
+  const raw = (id || '').trim().toLowerCase();
+  return { role, username: raw.includes('@') ? raw.split('@')[0] : raw, email: raw.includes('@') ? raw : `${raw}@fitlife.app`, name: n.join(':').trim() };
+});
+if (!specs.length) { console.error('Aucun compte indiqué. Exemple : npm run staff -- admin:auroladmin:Auriol coach:maycoach:May'); process.exit(1); }
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
 const ALPHA = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -31,18 +36,18 @@ for (const s of specs) {
   if (!['admin', 'coach'].includes(s.role) || !EMAIL.test(s.email)) { console.error(`Ignoré (rôle admin ou coach, e-mail valide requis) : ${s.role}:${s.email}`); continue; }
   const found = await users.findOne({ email: s.email });
   if (found) {
-    const set = { role: s.role, onboarded: true };
+    const set = { role: s.role, onboarded: true, username: s.username };
     let pw = '(inchangé)';
     if (reset) { pw = password(); set.password_hash = await bcrypt.hash(pw, 10); }
     await users.updateOne({ _id: found._id }, { $set: set });
-    rows.push([s.role, s.email, pw, 'compte existant mis à jour']);
+    rows.push([s.role, `${s.username} (ou ${s.email})`, pw, 'compte existant mis à jour']);
   } else {
     const pw = password();
-    await users.insertOne({ name: s.name || s.email.split('@')[0], email: s.email, password_hash: await bcrypt.hash(pw, 10), created_at: Date.now(), onboarded: true, daily_goal: 300, theme: 'lime', goals: [], role: s.role });
-    rows.push([s.role, s.email, pw, 'compte créé']);
+    await users.insertOne({ name: s.name || s.email.split('@')[0], email: s.email, password_hash: await bcrypt.hash(pw, 10), created_at: Date.now(), onboarded: true, daily_goal: 300, theme: 'lime', goals: [], role: s.role, username: s.username });
+    rows.push([s.role, `${s.username} (ou ${s.email})`, pw, 'compte créé']);
   }
 }
 await client.close();
-console.log('\nrôle   | e-mail | mot de passe | état');
+console.log('\nrôle | identifiant | mot de passe | état');
 for (const r of rows) console.log(r.join(' | '));
 console.log('\nConservez ces mots de passe maintenant : ils ne seront plus affichés.');

@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerSocial } from './social.js';
 import { createRealtime } from './realtime.js';
-import { activities, bookings, calls, challenges, communityMembers, courses, db, eventMembers, events, favorites, getContent, goals, lives, logs, mealPlans, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
+import { activities, bookings, calls, challenges, communityMembers, courses, db, eventMembers, events, favorites, getContent, goals, groupMsgs, groups, lives, logs, mealPlans, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
 
 const PORT = Number(process.env.PORT) || 5181;
 const PROD = process.env.NODE_ENV === 'production';
@@ -35,7 +35,14 @@ const cookies = (req) => Object.fromEntries((req.headers.cookie || '').split(';'
 const ADMINS = new Set((process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean));
 const isAdmin = (u) => u.role === 'admin' || ADMINS.has(String(u.email).toLowerCase());   // rôle enregistré en base (seule la base le modifie), ou adresse listée dans ADMIN_EMAILS
 const isCoach = (u) => u.role === 'coach';                                                  // rôle donné par un administrateur
-const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), coach: isCoach(u), avatar: u.avatar_url || null });
+const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), coach: isCoach(u), phone: u.phone || '', avatar: u.avatar_url || null });
+// numéro de téléphone : chiffres (6 à 15) avec « + » facultatif au début, séparateurs courants tolérés
+const cleanPhone = (v) => {
+  const s = String(v ?? '').trim();
+  const digits = s.replace(/\D/g, '');
+  if (!/^\+?[\d\s().-]{6,24}$/.test(s) || digits.length < 6 || digits.length > 15) return null;
+  return (s.startsWith('+') ? '+' : '') + digits;
+};
 const canHost = (u) => isAdmin(u) || isCoach(u);                          // peuvent lancer et intégrer des lives dans les actualités
 // Express 4 ne capte pas les erreurs des handlers async : on les transmet au gestionnaire d'erreurs
 const ah = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -95,22 +102,25 @@ app.post('/api/auth/register', authLimit, ah(async (req, res) => {
   const fields = {};
   if (name.length < 1 || name.length > 40) fields.name = 'Entre ton nom (40 caractères maximum).';
   if (!EMAIL.test(email) || email.length > 254) fields.email = 'Entre une adresse e-mail valide.';
+  const phone = cleanPhone(req.body?.phone);
+  if (!phone) fields.phone = 'Entre un numéro de téléphone valide (ex. +225 07 00 00 00 00).';
   if (password.length < 8) fields.password = 'Utilise au moins 8 caractères.';
   else if (Buffer.byteLength(password) > 72) fields.password = 'Le mot de passe est trop long (72 octets maximum).';
   if (Object.keys(fields).length) return res.status(400).json({ error: 'Corrige les champs signalés.', fields });
 
   const taken = () => res.status(409).json({ error: 'Un compte existe déjà avec cet e-mail.', fields: { email: 'Cet e-mail est déjà inscrit. Essaie de te connecter.' } });
   if (await users.findOne({ email }, { projection: { _id: 1 } })) return taken();
-  const user = { name, email, password_hash: await bcrypt.hash(password, 10), created_at: Date.now(), onboarded: false, daily_goal: 300, theme: 'lime', goals: [] };
+  const user = { name, email, phone, password_hash: await bcrypt.hash(password, 10), created_at: Date.now(), onboarded: false, daily_goal: 300, theme: 'lime', goals: [] };
   try { user._id = (await users.insertOne(user)).insertedId; } catch (e) { if (e.code === 11000) return taken(); throw e; }
   await startSession(res, user._id);
   res.status(201).json({ user: publicUser(user) });
 }));
 
 app.post('/api/auth/login', authLimit, ah(async (req, res) => {
-  const email = String(req.body?.email ?? '').trim().toLowerCase();
+  const login = String(req.body?.email ?? '').trim().toLowerCase();
   const password = String(req.body?.password ?? '');
-  const user = await users.findOne({ email });
+  // l'équipe peut se connecter avec un identifiant (ex. auroladmin) ou son e-mail
+  const user = await users.findOne(login.includes('@') ? { email: login } : { username: login });
   const ok = await bcrypt.compare(password, user ? user.password_hash : DUMMY_HASH); // même durée si l'email n'existe pas
   if (!user || !ok) return res.status(401).json({ error: 'E-mail ou mot de passe incorrect.' });
   await startSession(res, user._id);
@@ -374,6 +384,11 @@ app.put('/api/profile', requireAuth, ah(async (req, res) => {
   const name = String(req.body?.name ?? '').trim();
   if (name.length < 1 || name.length > 40) return res.status(400).json({ error: 'Entre ton nom (40 caractères maximum).', fields: { name: 'Entre ton nom (40 caractères maximum).' } });
   const set = { name };
+  if (req.body?.phone !== undefined) {
+    const phone = cleanPhone(req.body.phone);
+    if (!phone) return res.status(400).json({ error: 'Entre un numéro de téléphone valide.', fields: { phone: 'Entre un numéro de téléphone valide.' } });
+    set.phone = phone;
+  }
   const email = req.body?.email == null ? req.user.email : String(req.body.email).trim().toLowerCase();
   if (email !== req.user.email) {   // changer d'e-mail redemande le mot de passe
     if (!EMAIL.test(email) || email.length > 254) return res.status(400).json({ error: 'Entre une adresse e-mail valide.', fields: { email: 'Entre une adresse e-mail valide.' } });
@@ -777,7 +792,7 @@ async function purgeUser(uid) {
   await sbRemove(gone?.avatar_path);
   await Promise.all([logs.deleteMany({ user_id: uid }), runs.deleteMany({ user_id: uid }), favorites.deleteMany({ user_id: uid }),
     bookings.deleteMany({ user_id: uid }), activities.deleteMany({ user_id: uid }), posts.deleteMany({ user_id: uid }),
-    members.deleteMany({ user_id: uid }), eventMembers.deleteMany({ user_id: uid }), sessions.deleteMany({ user_id: uid }), mealPlans.deleteMany({ coach_id: uid })]);
+    members.deleteMany({ user_id: uid }), eventMembers.deleteMany({ user_id: uid }), sessions.deleteMany({ user_id: uid }), mealPlans.deleteMany({ coach_id: uid }), groups.updateMany({}, { $pull: { member_ids: uid } })]);
   const mine = (await challenges.find({ created_by: uid }).project({ _id: 1 }).toArray()).map((c) => c._id);
   if (mine.length) await Promise.all([members.deleteMany({ challenge_id: { $in: mine } }), challenges.deleteMany({ _id: { $in: mine } })]);
   await users.deleteOne({ _id: uid });
@@ -802,7 +817,7 @@ const userStatsMap = async (ids) => {
   const a = new Map(acts.map((r) => [String(r._id), r])), w = new Map(wk.map((r) => [String(r._id), r.n]));
   return (id) => { const r = a.get(String(id)); return { activities: r?.count ?? 0, distance: r?.distance ?? 0, duration: r?.duration ?? 0, steps: r?.steps ?? 0, lastActivity: r?.last ?? null, workouts: w.get(String(id)) ?? 0 }; };
 };
-const adminUserJson = (u, st) => ({ id: String(u._id), name: u.name, email: u.email, avatar: u.avatar_url || null, createdAt: u.created_at, admin: isAdmin(u), coach: isCoach(u), onboarded: !!u.onboarded, ...st(u._id) });
+const adminUserJson = (u, st) => ({ id: String(u._id), name: u.name, email: u.email, avatar: u.avatar_url || null, createdAt: u.created_at, admin: isAdmin(u), coach: isCoach(u), phone: u.phone || '', username: u.username || '', onboarded: !!u.onboarded, ...st(u._id) });
 
 // l'administrateur donne ou retire le rôle coach (un compte administrateur garde son rôle)
 app.put('/api/admin/users/:id/coach', requireAdmin, ah(async (req, res) => {
@@ -819,7 +834,7 @@ app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const q = String(req.query.q ?? '').trim().slice(0, 60);
   const re = new RegExp(escapeRe(q), 'i');
-  const list = await users.find(q ? { $or: [{ name: re }, { email: re }] } : {}).sort({ created_at: -1 }).limit(300).toArray();
+  const list = await users.find(q ? { $or: [{ name: re }, { email: re }, { phone: re }, { username: re }] } : {}).sort({ created_at: -1 }).limit(300).toArray();
   const st = await userStatsMap(list.map((u) => u._id));
   res.json({ users: list.map((u) => adminUserJson(u, st)), total: await users.countDocuments() });
 }));
@@ -1129,6 +1144,71 @@ app.delete('/api/live/:id', requireHost, ah(async (req, res) => {
   res.json({ ok: true });
 }));
 
+/* ----- groupes d'information (admin) : liste de membres avec e-mail et numéro, et informations envoyées à tout le groupe ----- */
+const grpBody = async (b) => {
+  const name = cleanStr(b.name, 2, 60);
+  if (!name) return { error: 'Donne un nom au groupe (2 à 60 caractères).' };
+  let ids = [];
+  if (b.all === true) ids = (await users.find({ role: { $nin: ['admin', 'coach'] } }).project({ _id: 1 }).toArray()).map((u) => u._id);
+  else if (Array.isArray(b.memberIds)) ids = [...new Set(b.memberIds.map(String))].map(toId).filter(Boolean);
+  if (ids.length > 2000) return { error: 'Un groupe est limité à 2000 membres.' };
+  if (ids.length) ids = (await users.find({ _id: { $in: ids } }).project({ _id: 1 }).toArray()).map((u) => u._id);
+  return { doc: { name, member_ids: ids } };
+};
+const grpJson = (g, extra = {}) => ({ id: String(g._id), name: g.name, count: g.member_ids.length, createdAt: g.created_at, ...extra });
+
+app.get('/api/admin/groups', requireAdmin, ah(async (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const list = await groups.find().sort({ created_at: -1 }).limit(100).toArray();
+  const last = await groupMsgs.aggregate([{ $match: { group_id: { $in: list.map((g) => g._id) } } }, { $sort: { created_at: -1 } }, { $group: { _id: '$group_id', text: { $first: '$text' }, at: { $first: '$created_at' }, n: { $sum: 1 } } }]).toArray();
+  const by = new Map(last.map((r) => [String(r._id), r]));
+  res.json({ groups: list.map((g) => grpJson(g, { lastText: by.get(String(g._id))?.text ?? '', lastAt: by.get(String(g._id))?.at ?? null, messages: by.get(String(g._id))?.n ?? 0 })) });
+}));
+
+app.post('/api/admin/groups', requireAdmin, ah(async (req, res) => {
+  const r = await grpBody(req.body ?? {});
+  if (r.error) return res.status(400).json({ error: r.error });
+  const doc = { ...r.doc, created_by: req.user._id, created_at: Date.now() };
+  doc._id = (await groups.insertOne(doc)).insertedId;
+  res.status(201).json({ group: grpJson(doc) });
+}));
+
+app.get('/api/admin/groups/:id', requireAdmin, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const id = toId(req.params.id), g = id && await groups.findOne({ _id: id });
+  if (!g) return res.status(404).json({ error: 'Groupe introuvable.' });
+  const [mem, msgs] = await Promise.all([
+    users.find({ _id: { $in: g.member_ids } }).project({ name: 1, email: 1, phone: 1 }).sort({ name: 1 }).toArray(),
+    groupMsgs.find({ group_id: g._id }).sort({ created_at: -1 }).limit(30).toArray(),
+  ]);
+  res.json({ group: grpJson(g), members: mem.map((u) => ({ id: String(u._id), name: u.name, email: u.email, phone: u.phone || '' })), messages: msgs.map((m) => ({ id: String(m._id), text: m.text, at: m.created_at })) });
+}));
+
+app.put('/api/admin/groups/:id', requireAdmin, ah(async (req, res) => {
+  const id = toId(req.params.id), r = await grpBody(req.body ?? {});
+  if (r.error) return res.status(400).json({ error: r.error });
+  if (!id || !(await groups.updateOne({ _id: id }, { $set: r.doc })).matchedCount) return res.status(404).json({ error: 'Groupe introuvable.' });
+  res.json({ ok: true });
+}));
+
+app.delete('/api/admin/groups/:id', requireAdmin, ah(async (req, res) => {
+  const id = toId(req.params.id);
+  if (id) await Promise.all([groups.deleteOne({ _id: id }), groupMsgs.deleteMany({ group_id: id })]);
+  res.json({ ok: true });
+}));
+
+// information envoyée aux membres : elle apparaît dans leurs notifications
+app.post('/api/admin/groups/:id/messages', requireAdmin, ah(async (req, res) => {
+  const id = toId(req.params.id), g = id && await groups.findOne({ _id: id });
+  if (!g) return res.status(404).json({ error: 'Groupe introuvable.' });
+  const text = String(req.body?.text ?? '').trim();
+  if (text.length < 2 || text.length > 1000) return res.status(400).json({ error: "Écris l'information (2 à 1000 caractères)." });
+  if (!g.member_ids.length) return res.status(400).json({ error: 'Ce groupe ne contient aucun membre.' });
+  const doc = { group_id: g._id, text, created_by: req.user._id, created_at: Date.now() };
+  doc._id = (await groupMsgs.insertOne(doc)).insertedId;
+  res.status(201).json({ message: { id: String(doc._id), text, at: doc.created_at }, recipients: g.member_ids.length });
+}));
+
 /* ----- coachs et réservations ----- */
 const SLOTS = ['07:00', '08:30', '10:00', '12:30', '17:00', '18:30', '20:00'];
 const BOOK_DAYS = 6;                                    // aujourd'hui + 5 jours, comme l'écran de réservation
@@ -1221,6 +1301,12 @@ app.get('/api/notifications', requireAuth, ah(async (req, res) => {
   }
   for (const c of chRows) items.push({ id: 'c' + c._id, type: 'challenge', title: c.official ? `Défi officiel : ${c.title}` : `Nouveau défi : ${c.title}`, text: `Par ${c.creator_name}`, at: c.created_at, to: `/activity/challenges/${c._id}` });
   for (const e of evRows) items.push({ id: 'e' + e._id, type: 'event', title: e.title, text: e.place || 'Événement à venir', at: e.starts_at, to: `/activity/events/${e._id}` });
+  const mine = await groups.find({ member_ids: req.user._id }).project({ name: 1 }).toArray();
+  if (mine.length) {
+    const gName = new Map(mine.map((g) => [String(g._id), g.name]));
+    const msgs = await groupMsgs.find({ group_id: { $in: mine.map((g) => g._id) }, created_at: { $gt: now - 14 * DAY } }).sort({ created_at: -1 }).limit(10).toArray();
+    for (const m of msgs) items.push({ id: 'i' + m._id, type: 'info', title: gName.get(String(m.group_id)) ?? 'Information', text: m.text, at: m.created_at, to: '/notifications' });
+  }
   items.sort((a, b) => (b.state === 'live') - (a.state === 'live') || b.at - a.at);
   res.json({ items });
 }));

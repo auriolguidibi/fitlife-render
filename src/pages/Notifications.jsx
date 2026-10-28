@@ -5,7 +5,7 @@ import Icon from '../components/Icon';
 import { dateLabel, timeLabel } from '../components/ActivityBits';
 import { markSeen, useNotifs } from '../lib/notifs';
 
-const META = { live: ['📡', 'Live'], menu: ['🍽️', 'Suivi alimentaire'], challenge: ['🏆', 'Défi'], event: ['📅', 'Événement'] };
+const META = { live: ['📡', 'Live'], menu: ['🍽️', 'Suivi alimentaire'], challenge: ['🏆', 'Défi'], event: ['📅', 'Événement'], info: ['📣', 'Information'] };
 const ago = (t) => {
   const m = Math.round((Date.now() - t) / 60000);
   if (m < 1) return "à l'instant";
@@ -29,7 +29,7 @@ export default function Notifications() {
             const live = n.type === 'live';
             const on = live && n.state === 'live';
             return (
-              <Link key={n.id} to={n.to} className={'notif' + (live ? ' is-live' : '') + (on ? ' on' : '')}>
+              <Link key={n.id} to={n.to} className={'notif' + (n.type === 'info' ? ' info' : '') + (live ? ' is-live' : '') + (on ? ' on' : '')}>
                 <i className="nf-ic" aria-hidden="true">{emoji}</i>
                 <div className="nf-t">
                   <small>{on ? 'EN DIRECT MAINTENANT' : label}{!live && ` · ${n.type === 'event' ? `le ${dateLabel(n.at)} à ${timeLabel(n.at)}` : ago(n.at)}`}</small>

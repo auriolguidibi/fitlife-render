@@ -37,6 +37,10 @@ export function Fav({ id, className = '' }) {
   );
 }
 
+export const SideBrand = () => (
+  <div className="side-brand" aria-hidden="true"><img src="/logo.png" alt="" width="34" height="34" /><span>Fit<b>Life</b></span></div>
+);
+
 export function WorkoutCard({ w }) {
   return (
     <Link to={`/workout/${w.id}`} className="feat">
