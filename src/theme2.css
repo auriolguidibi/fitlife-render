@@ -264,3 +264,13 @@ html,body{background:#05070c}
   .tabbar .tab.on::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
   .badge{top:8px;right:calc(50% - 22px);border:2px solid #161b24}
 }
+
+/* « À la une » : une grande carte, les autres s'affichent avec « Voir plus » (plus de défilement sur une seule ligne) */
+.feat-stack{display:grid;gap:14px}
+.feat-stack .feat{flex:none;width:100%;height:clamp(200px,58vw,250px)}
+.more-btn{margin-top:12px;width:100%}
+@media (min-width:900px){
+  .feat-stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feat-stack .feat:first-child{grid-column:1/-1;height:300px}
+  .more-btn{width:auto;min-width:220px;margin-left:auto;margin-right:auto;display:flex}
+}

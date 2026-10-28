@@ -34,6 +34,7 @@ export default function Home() {
   const [q, setQ] = useState('');
   const [results, setResults] = useState(null);   // null = pas de recherche
   const [searching, setSearching] = useState(false);
+  const [moreFeat, setMoreFeat] = useState(false);   // « À la une » : une carte, puis les autres sur demande
   const stamp = useRef(0);
 
   const load = useCallback(() => {
@@ -130,7 +131,15 @@ export default function Home() {
           {data.recommended.length > 0 && (
             <>
               <div className="sec px"><h3>À la une</h3></div>
-              <div className="rail">{data.recommended.map((w) => <WorkoutCard key={w.id} w={withBase(w)} />)}</div>
+              <div className="feat-stack px">
+                <WorkoutCard w={withBase(data.recommended[0])} />
+                {moreFeat && data.recommended.slice(1).map((w) => <WorkoutCard key={w.id} w={withBase(w)} />)}
+              </div>
+              {data.recommended.length > 1 && (
+                <div className="px"><button className="btn ghost small more-btn" aria-expanded={moreFeat} onClick={() => setMoreFeat((v) => !v)}>
+                  {moreFeat ? 'Voir moins' : `Voir plus (${data.recommended.length - 1})`}
+                </button></div>
+              )}
             </>
           )}
           {!data.recommended.length && !data.courses.length && <Empty>Aucune séance n'a encore été ajoutée.<br />Reviens bientôt.</Empty>}
