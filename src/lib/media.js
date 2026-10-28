@@ -26,3 +26,6 @@ export function embedUrl(u) {
   m = VIMEO.exec(u || '');
   return m ? `https://player.vimeo.com/video/${m[1]}` : null;
 }
+
+/** Identifiant d'une vidéo YouTube (pour sa vignette), sinon null */
+export const youtubeId = (u) => YT.exec(u || '')?.[1] ?? null;

@@ -8,6 +8,7 @@ import Icon from '../components/Icon';
 import { assetUrl } from '../lib/media';
 import { TypePhoto } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
+import NewsHome from '../components/NewsHome';
 import { PHOTO_SKIP_KEY } from './Photo';
 
 const BASE = import.meta.env.BASE_URL;
@@ -119,6 +120,8 @@ export default function Home() {
             <div className="thumb"><TypePhoto type="run" /></div>
             <div className="t"><b>Marche ou course</b><small>Suis ton parcours, relève des défis, partage tes résultats</small></div>
           </Link>
+
+          <NewsHome />
 
           {data.courses.length > 0 && (
             <div className="chips px" aria-label="Cours">
