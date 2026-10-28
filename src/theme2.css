@@ -245,3 +245,22 @@ html,body{background:#05070c}
   .app.bare .page.admin{margin-left:var(--side);max-width:none;padding:28px 36px 48px}
   .app.bare .page.admin>*{max-width:980px}
 }
+
+/* ---------- barre de menu du bas (mobile) : capsule flottante, pastille verte sur l'onglet actif ---------- */
+@media (max-width:899px){
+  :root{--tab:calc(92px + env(safe-area-inset-bottom))}
+  .tabbar{bottom:max(12px,env(safe-area-inset-bottom));width:calc(min(100%,var(--col)) - 24px);height:68px;padding:0 6px;border-radius:26px;align-items:center;gap:0;
+    background:linear-gradient(180deg,rgba(30,35,46,.92),rgba(18,22,30,.94));border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 14px 36px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .tabbar .tab{position:relative;flex:1;min-width:0;height:100%;max-width:none;padding:8px 0 6px;gap:4px;justify-content:center;border-radius:20px;color:#7d879a;font-size:22px;background:none;box-shadow:none;transition:color .2s,transform .2s}
+  .tabbar .tab .ic{position:relative;z-index:1;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+  .tabbar .tab .tl{position:relative;z-index:1;font-size:9.5px;font-weight:600;letter-spacing:.1px;line-height:1;transition:color .2s}
+  .tabbar .tab::before{content:"";position:absolute;top:9px;left:50%;width:44px;height:30px;margin-left:-22px;border-radius:15px;background:color-mix(in srgb,var(--lime) 0%,transparent);transition:background .25s,transform .25s;transform:scale(.6)}
+  .tabbar .tab:active{transform:scale(.94)}
+  .tabbar .tab.on,.tabbar .tab.on .tl{color:var(--lime);background:none;box-shadow:none}
+  .tabbar .tab.on::before{background:color-mix(in srgb,var(--lime) 18%,transparent);transform:scale(1)}
+  .tabbar .tab.on .ic{transform:translateY(-1px) scale(1.08)}
+  .tabbar .tab.on .tl{font-weight:800}
+  .tabbar .tab.on::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
+  .badge{top:8px;right:calc(50% - 22px);border:2px solid #161b24}
+}
