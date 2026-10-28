@@ -411,3 +411,5 @@ html,body{background:#05070c}
 .det-hero .xa-stage .xanim{height:100%;width:auto;max-width:100%}
 .sess .xa-stage{padding:150px 0 220px}
 .sess .xa-stage .xanim{height:auto;width:min(92%,calc(100dvh - 380px),460px);aspect-ratio:1}
+
+.coach-space .ahero{margin-bottom:12px}

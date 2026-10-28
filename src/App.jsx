@@ -8,7 +8,7 @@ import { useAuth } from './auth';
 import Icon from './components/Icon';
 import { Goals } from './pages/Onboarding';
 import Welcome from './pages/Welcome';
-import RequireAuth, { RequireAdmin } from './components/RequireAuth';
+import RequireAuth, { RequireAdmin, RequireCoach } from './components/RequireAuth';
 import Home from './pages/Home';
 import { CourseDetail, Courses } from './pages/Courses';
 import { Workout } from './pages/Workout';
@@ -23,7 +23,7 @@ import LiveBanner from './components/LiveBanner';
 import Photo from './pages/Photo';
 import History from './pages/History';
 import Plans from './pages/Plans';
-import Coach from './pages/Coach';
+import { CoachHome, CoachLive, CoachMenus, CoachProfile } from './pages/CoachSpace';
 import Chat from './pages/Chat';
 import Call from './pages/Call';
 import CommunityPage, { CommunityNew } from './pages/CommunityPage';
@@ -39,7 +39,7 @@ const NAV = [
   ['/home', 'home', 'Accueil'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'],
   ['/trainers', 'users', 'Coachs'], ['/favorites', 'heart', 'Favoris', 'side'], ['/profile', 'user', 'Profil'],
 ];
-const BARE = ['/welcome', '/goals', '/admin', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
+const BARE = ['/welcome', '/goals', '/admin', '/coach', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
 
 function Nav({ unread, admin }) {
   return (
@@ -71,7 +71,7 @@ export default function App() {
     <div className={'app' + (bare ? ' bare' : '')}>
       <main className="main" key={pathname}>
         <Routes>
-          <Route path="/" element={authLoading ? null : <Navigate to={user ? (user.admin ? '/admin' : user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
+          <Route path="/" element={authLoading ? null : <Navigate to={user ? (user.admin ? '/admin' : user.coach ? '/coach' : user.onboarded ? '/home' : '/goals') : '/welcome'} replace />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/photo" element={<Photo />} />
@@ -85,7 +85,10 @@ export default function App() {
           <Route path="/summary/:id" element={<RequireAuth><Summary /></RequireAuth>} />
           <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
           <Route path="/plans" element={<RequireAuth><Plans /></RequireAuth>} />
-          <Route path="/coach" element={<RequireAuth><Coach /></RequireAuth>} />
+          <Route path="/coach" element={<RequireCoach><CoachHome /></RequireCoach>} />
+          <Route path="/coach/menus" element={<RequireCoach><CoachMenus /></RequireCoach>} />
+          <Route path="/coach/live" element={<RequireCoach><CoachLive /></RequireCoach>} />
+          <Route path="/coach/profile" element={<RequireCoach><CoachProfile /></RequireCoach>} />
           <Route path="/social" element={<RequireAuth><SocialMessages /></RequireAuth>} />
           <Route path="/social/people" element={<RequireAuth><SocialPeople /></RequireAuth>} />
           <Route path="/social/communities" element={<RequireAuth><SocialCommunities /></RequireAuth>} />

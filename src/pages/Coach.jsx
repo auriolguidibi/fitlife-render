@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { useAuth } from '../auth';
 import { useStore } from '../store';
-import { BackBtn, Empty } from '../components/ui';
+import { Empty } from '../components/ui';
 import { localDay } from './Plans';
 
 const SUGGEST = ['Petit-déjeuner', 'Collation', 'Déjeuner', 'Goûter', 'Dîner'];
@@ -116,25 +115,5 @@ export function LiveTab() {
       <button className="btn" type="submit" disabled={busy || !pick}>{busy ? 'Lancement…' : 'Lancer le live maintenant'}</button>
       <Link to={`/social/communities/${pick}`} className="link-btn" style={{ display: 'block', textAlign: 'center', marginTop: 10 }}>Programmer un live à une date</Link>
     </form>
-  );
-}
-
-/* ---------------- espace coach ---------------- */
-export default function Coach() {
-  const { user, loading } = useAuth();
-  const [tab, setTab] = useState('plan');
-  if (loading) return null;
-  if (!user?.coach) return <Navigate to="/profile" replace />;
-  return (
-    <section className="page">
-      <div className="topbar"><BackBtn to="/profile" /><h2>Espace coach</h2><span className="sp" /></div>
-      <div className="px">
-        <div className="seg" role="tablist" aria-label="Espace coach">
-          <button role="tab" aria-selected={tab === 'plan'} className={tab === 'plan' ? 'on' : ''} onClick={() => setTab('plan')}>Planning alimentaire</button>
-          <button role="tab" aria-selected={tab === 'live'} className={tab === 'live' ? 'on' : ''} onClick={() => setTab('live')}>Live</button>
-        </div>
-        <div style={{ paddingTop: 14 }}>{tab === 'plan' ? <PlanTab /> : <LiveTab />}</div>
-      </div>
-    </section>
   );
 }

@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --port 5180",
     "api": "node --env-file-if-exists=.env server/index.js",
+    "staff": "node --env-file=.env server/create-staff.mjs",
     "migrate:media": "node --env-file=.env server/migrate-media.mjs",
     "start": "npm run build && NODE_ENV=production node --env-file-if-exists=.env server/index.js"
   },

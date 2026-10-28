@@ -9,6 +9,7 @@ export default function RequireAuth({ children, fallback = null }) {
   if (loading) return fallback;
   if (!user) return <Navigate to="/welcome" replace />;
   if (user.admin) return <Navigate to="/admin" replace />;   // l'administrateur n'a pas d'espace client
+  if (user.coach) return <Navigate to="/coach" replace />;   // le coach non plus : il a son propre espace
   if (!user.onboarded) return <Navigate to="/goals" replace />;
   return children;
 }
@@ -19,6 +20,15 @@ export function RequireAdmin({ children }) {
   if (loading) return null;
   if (!user) return <Navigate to="/welcome" replace />;
   return user.admin ? children : <Navigate to={user.onboarded ? '/home' : '/goals'} replace />;
+}
+
+/* Réserve une page aux coachs (les administrateurs ont leur propre espace). */
+export function RequireCoach({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/welcome" replace />;
+  if (user.admin) return <Navigate to="/admin" replace />;
+  return user.coach ? children : <Navigate to={user.onboarded ? '/home' : '/goals'} replace />;
 }
 
 /* Aligne les favoris locaux sur les marqueurs `fav` renvoyés par le serveur. */

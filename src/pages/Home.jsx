@@ -67,6 +67,8 @@ export default function Home() {
 
   if (authLoading) return <section className="page"><HomeSkeleton /></section>;
   if (!user) return <Navigate to="/welcome" replace />;
+  if (user.admin) return <Navigate to="/admin" replace />;   // l'équipe a ses propres espaces
+  if (user.coach) return <Navigate to="/coach" replace />;
   if (user.admin) return <Navigate to="/admin" replace />;
   if (!user.onboarded) return <Navigate to="/goals" replace />;
 
@@ -127,11 +129,6 @@ export default function Home() {
             <div className="t"><b>Marche ou course</b><small>Suis ton parcours, relève des défis, partage tes résultats</small></div>
           </Link>
 
-          {user.coach && (
-            <Link to="/news" className="row act-cta px-card admin-link">
-              <div className="t"><b>Lancer un live</b><small>Annonce ton direct : les membres sont prévenus et peuvent le rejoindre</small></div>
-            </Link>
-          )}
           <MenuHome />
           <NewsHome />
 

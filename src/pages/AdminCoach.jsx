@@ -7,7 +7,7 @@ import { LiveTab, PlanTab } from './Coach';
 import { HostLive } from './News';
 
 /* Lives déjà publiés : l'administrateur peut les terminer */
-function LiveList({ refreshKey }) {
+export function LiveList({ refreshKey }) {
   const { notify } = useStore();
   const [lives, setLives] = useState(null);
   const load = useCallback(() => { api.news().then((d) => setLives(d.lives)).catch(() => setLives([])); }, []);
@@ -27,6 +27,20 @@ function LiveList({ refreshKey }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/* Tous les outils de live sur une page : lien YouTube / Vimeo, lives en cours, live vidéo dans une communauté */
+export function LiveTools() {
+  const [tick, setTick] = useState(0);
+  return (
+    <>
+      <h3 className="h3">Live avec un lien</h3>
+      <HostLive onDone={() => setTick((t) => t + 1)} />
+      <LiveList refreshKey={tick} />
+      <h3 className="h3" style={{ marginTop: 22 }}>Live vidéo dans ma communauté</h3>
+      <LiveTab />
+    </>
   );
 }
 

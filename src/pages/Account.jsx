@@ -138,7 +138,6 @@ export function Profile() {
     ['/history', '🕘', 'Historique', 'Toute mon activité'],
     ['/favorites', '❤️', 'Favoris', 'Mes séances préférées'],
     ['/notifications', '🔔', 'Notifications', 'Lives, menus, défis'],
-    ...(user?.coach ? [['/coach', '🧑‍🏫', 'Espace coach', 'Menus, lives']] : []),
     ...(user?.admin ? [['/admin', '🛡️', 'Administration', 'Comptes, contenu']] : []),
   ];
   return (
