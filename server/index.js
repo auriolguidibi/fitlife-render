@@ -834,7 +834,7 @@ app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const q = String(req.query.q ?? '').trim().slice(0, 60);
   const re = new RegExp(escapeRe(q), 'i');
-  const list = await users.find(q ? { $or: [{ name: re }, { email: re }, { phone: re }, { username: re }] } : {}).sort({ created_at: -1 }).limit(300).toArray();
+  const list = await users.find(q ? { $or: [{ name: re }, { email: re }, { phone: re }, { username: re }] } : {}).sort({ created_at: -1 }).limit(2000).toArray();
   const st = await userStatsMap(list.map((u) => u._id));
   res.json({ users: list.map((u) => adminUserJson(u, st)), total: await users.countDocuments() });
 }));

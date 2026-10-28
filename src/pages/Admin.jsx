@@ -51,6 +51,32 @@ export function AdminProfile() {
   );
 }
 
+/* Contacts des inscrits : numéros et e-mails à copier ou exporter pour les joindre */
+function ContactsBar({ users }) {
+  const { notify } = useStore();
+  const withPhone = users.filter((u) => u.phone);
+  const copyPhones = async () => {
+    try { await navigator.clipboard.writeText(withPhone.map((u) => u.phone).join(', ')); notify(`${withPhone.length} numéros copiés`); } catch { notify('Copie impossible'); }
+  };
+  const exportCsv = () => {
+    const cell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = [['Nom', 'E-mail', 'Téléphone', 'Inscrit le'], ...users.map((u) => [u.name, u.email, u.phone, new Date(u.createdAt).toLocaleDateString('fr')])];
+    const blob = new Blob(['\ufeff' + rows.map((r) => r.map(cell).join(';')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'contacts-fitlife.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  return (
+    <div className="contacts-bar">
+      <span><b>{withPhone.length}</b> numéro{withPhone.length > 1 ? 's' : ''} sur {users.length} inscrit{users.length > 1 ? 's' : ''}</span>
+      <div>
+        <button className="mini-btn" onClick={copyPhones} disabled={!withPhone.length}>Copier les numéros</button>
+        <button className="mini-btn" onClick={exportCsv} disabled={!users.length}>Exporter (CSV)</button>
+      </div>
+    </div>
+  );
+}
+
 function ErrorBox({ title, message, onRetry }) {
   return <div className="state-box center" role="alert"><b>{title}</b><p>{message}</p><button className="btn" onClick={onRetry}>Réessayer</button></div>;
 }
@@ -124,6 +150,7 @@ export function AdminUsers() {
         <div className="lst" aria-busy="true" aria-label="Chargement" style={{ marginTop: 14 }}><div className="row skeleton" /><div className="row skeleton" /></div>
       ) : (
         <>
+          <ContactsBar users={d.users} />
           <p className="muted" style={{ margin: '12px 2px 8px' }}>{d.users.length} {d.users.length === 1 ? 'compte affiché' : 'comptes affichés'} sur {d.total}</p>
           <div className="lst grid">
             {d.users.length ? d.users.map((u) => (
@@ -131,7 +158,8 @@ export function AdminUsers() {
                 <Avatar name={u.name} src={u.avatar} size="sm" />
                 <div className="t">
                   <b>{u.name}<RoleBadges u={u} /></b>
-                  <small>{u.email}{u.phone ? ` · ${u.phone}` : ''}</small>
+                  <small>{u.email}</small>
+                  <small className={u.phone ? 'ph' : 'ph none'}>{u.phone ? `📞 ${u.phone}` : '📞 numéro non renseigné'}</small>
                   <small>{u.activities} {u.activities === 1 ? 'activité' : 'activités'} · {fmtKm(u.distance)} km · inscrit le {frDate(u.createdAt)}</small>
                 </div>
               </Link>
