@@ -121,6 +121,11 @@ export default function Home() {
             <div className="t"><b>Marche ou course</b><small>Suis ton parcours, relève des défis, partage tes résultats</small></div>
           </Link>
 
+          {user.coach && (
+            <Link to="/news" className="row act-cta px-card admin-link">
+              <div className="t"><b>Lancer un live</b><small>Annonce ton direct : les membres sont prévenus et peuvent le rejoindre</small></div>
+            </Link>
+          )}
           <NewsHome />
 
           {data.courses.length > 0 && (

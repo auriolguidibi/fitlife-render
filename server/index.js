@@ -1078,6 +1078,14 @@ app.get('/api/news', requireAuth, ah(async (req, res) => {
   });
 }));
 
+// lives à rejoindre maintenant (ou qui démarrent dans moins de 15 min) : interrogé régulièrement par l'application
+app.get('/api/live', requireAuth, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const now = Date.now();
+  const rows = await lives.find({ ended_at: null, starts_at: { $lte: now + 15 * 60000, $gt: now - LIVE_MAX } }).sort({ starts_at: -1 }).limit(5).toArray();
+  res.json({ lives: rows.filter((l) => liveState(l) !== 'ended').map((l) => liveJson(l, req.user._id, req.user)) });
+}));
+
 function liveBody(b) {
   const title = cleanStr(b.title, 3, 80), description = String(b.description ?? '').trim().slice(0, 500);
   const url = cleanUrl(b.url);

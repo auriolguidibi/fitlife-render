@@ -18,6 +18,7 @@ import { Favorites, Profile } from './pages/Account';
 import { Activity, ActivityDetail, ActivityLive } from './pages/Activity';
 import { Community } from './pages/Community';
 import News from './pages/News';
+import LiveBanner from './components/LiveBanner';
 import Photo from './pages/Photo';
 import History from './pages/History';
 import Plans from './pages/Plans';
@@ -33,7 +34,7 @@ import { AdminEvents } from './pages/AdminEvents';
 import { ChallengeDetail, ChallengeNew, Challenges } from './pages/Challenges';
 
 const NAV = [
-  ['/home', 'home', 'Accueil'], ['/news', 'bolt', 'Actus'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'],
+  ['/home', 'home', 'Accueil'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'],
   ['/trainers', 'users', 'Coachs'], ['/favorites', 'heart', 'Favoris', 'side'], ['/profile', 'user', 'Profil'],
 ];
 const BARE = ['/welcome', '/goals', '/admin', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
@@ -113,6 +114,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      {!bare && user?.onboarded && !user.admin && pathname !== '/news' && <LiveBanner />}
       {!bare && <Nav unread={unread} admin={!!user?.admin} />}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{toast}</div>
     </div>

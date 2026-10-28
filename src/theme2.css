@@ -294,3 +294,18 @@ html,body{background:#05070c}
   .nt{min-height:190px}
   .nt.hero{grid-column:span 2;grid-row:span 2;min-height:392px}
 }
+
+/* ---------- bandeau « live en cours » ---------- */
+.live-banner{position:fixed;z-index:60;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);width:calc(min(100%,var(--col)) - 24px);display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border-radius:20px;background:rgba(22,26,35,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 16px 40px rgba(0,0,0,.55);backdrop-filter:blur(16px);animation:lb-in .4s cubic-bezier(.2,.9,.3,1)}
+.live-banner.on{border-color:color-mix(in srgb,var(--danger) 60%,transparent);box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 3px color-mix(in srgb,var(--danger) 16%,transparent)}
+@keyframes lb-in{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
+.lb-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--mut)}
+.live-banner.on .lb-dot{background:var(--danger);box-shadow:0 0 0 0 var(--danger);animation:lb-pulse 1.5s infinite}
+@keyframes lb-pulse{70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.lb-t{flex:1;min-width:0}
+.lb-t b{display:block;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-t small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-join{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 16px;border-radius:14px;background:var(--lime);color:var(--on-lime);font-size:13.5px;font-weight:800}
+.live-banner.on .lb-join{background:var(--danger);color:#fff}
+.lb-x{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--mut);font-size:16px}
+@media (min-width:900px){.live-banner{left:calc(50% + var(--side)/2);width:min(560px,calc(100% - var(--side) - 48px))}}
