@@ -44,7 +44,7 @@ function LiveCard({ l, onEnd }) {
 }
 
 /* ---------- formulaire : l'admin ou le coach lance / programme un live ---------- */
-function HostLive({ onDone }) {
+export function HostLive({ onDone }) {
   const { notify } = useStore();
   const [open, setOpen] = useState(false);
   const [v, setV] = useState({ title: '', url: '', description: '', startsAt: toInput(Date.now()) });

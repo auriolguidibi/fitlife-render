@@ -1156,7 +1156,7 @@ app.get('/api/trainers/:id', requireAuth, ah(async (req, res) => {
 }));
 
 /* ----- coachs : planning alimentaire par jour ----- */
-const requireCoach = [requireAuth, (req, res, next) => (isCoach(req.user) ? next() : res.status(403).json({ error: 'Réservé aux coachs.' }))];
+const requireCoach = [requireAuth, (req, res, next) => (isCoach(req.user) || isAdmin(req.user) ? next() : res.status(403).json({ error: 'Réservé aux coachs et aux administrateurs.' }))];
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const validDay = (d) => DAY_RE.test(d) && !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
 const planJson = (p) => ({ day: p.day, meals: p.meals, updatedAt: p.updated_at });

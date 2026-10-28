@@ -10,7 +10,7 @@ const SUGGEST = ['Petit-déjeuner', 'Collation', 'Déjeuner', 'Goûter', 'Dîner
 const frDay = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('fr', { weekday: 'long', day: 'numeric', month: 'long' });
 
 /* ---------------- planning alimentaire ---------------- */
-function PlanTab() {
+export function PlanTab() {
   const { notify } = useStore();
   const [day, setDay] = useState(localDay());
   const [meals, setMeals] = useState(null);
@@ -69,7 +69,7 @@ function PlanTab() {
 }
 
 /* ---------------- lives ---------------- */
-function LiveTab() {
+export function LiveTab() {
   const nav = useNavigate();
   const { notify } = useStore();
   const [comms, setComms] = useState(null);

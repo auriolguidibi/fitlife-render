@@ -32,6 +32,7 @@ import { EventDetail, Events } from './pages/Events';
 import { AdminActivity, AdminHome, AdminProfile, AdminUserDetail, AdminUsers } from './pages/Admin';
 import { AdminContent } from './pages/AdminContent';
 import { AdminEvents } from './pages/AdminEvents';
+import { AdminCoach } from './pages/AdminCoach';
 import { ChallengeDetail, ChallengeNew, Challenges } from './pages/Challenges';
 
 const NAV = [
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/admin/activities/:id" element={<RequireAdmin><AdminActivity /></RequireAdmin>} />
           <Route path="/admin/content" element={<RequireAdmin><AdminContent /></RequireAdmin>} />
           <Route path="/admin/events" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
+          <Route path="/admin/coach" element={<RequireAdmin><AdminCoach /></RequireAdmin>} />
           <Route path="/activity/community" element={<RequireAuth><Community /></RequireAuth>} />
           <Route path="/activity/challenges" element={<RequireAuth><Challenges /></RequireAuth>} />
           <Route path="/activity/challenges/new" element={<RequireAuth><ChallengeNew /></RequireAuth>} />

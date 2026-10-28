@@ -12,7 +12,7 @@ import { BackBtn, Empty, SearchBox } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, typeOf } from '../lib/tracker';
 
 /* barre du bas de l'espace administrateur : même barre que l'application */
-const ANAV = [['/admin', 'home', 'Aperçu', true], ['/admin/users', 'users', 'Comptes'], ['/admin/content', 'book', 'Contenu'], ['/admin/events', 'clock', 'Événements'], ['/admin/profile', 'user', 'Profil']];
+const ANAV = [['/admin', 'home', 'Aperçu', true], ['/admin/users', 'users', 'Comptes'], ['/admin/content', 'book', 'Contenu'], ['/admin/events', 'clock', 'Événements'], ['/admin/coach', 'video', 'Live'], ['/admin/profile', 'user', 'Profil']];
 export function AdminNav() {
   return (
     <nav className="tabbar" aria-label="Espace administrateur">
@@ -67,7 +67,7 @@ export function AdminHome() {
     ['Comptes', C.users, 'users', '/admin/users'], ['Activités', C.activities, 'route', '/admin/users'], ['Séances', C.workouts, 'fire', '/admin/content'], ['Cours', C.courses, 'book', '/admin/content'],
     ['Coachs (fiches)', C.trainers, 'star', '/admin/content'], ['Événements', C.events, 'clock', '/admin/events'], ['Défis', C.challenges, 'trophy'], ['Publications', C.posts, 'chat'],
   ] : [];
-  const shortcuts = [['Gérer les comptes', 'Voir chaque compte, ses activités et son parcours', 'users', '/admin/users'], ['Contenu', 'Séances (avec vidéos), cours, objectifs, coachs', 'book', '/admin/content'], ['Événements', 'Créer des événements et suivre les inscriptions', 'clock', '/admin/events']];
+  const shortcuts = [['Gérer les comptes', 'Voir chaque compte, ses activités et son parcours', 'users', '/admin/users'], ['Contenu', 'Séances (avec vidéos), cours, objectifs, coachs', 'book', '/admin/content'], ['Événements', 'Créer des événements et suivre les inscriptions', 'clock', '/admin/events'], ['Live & menus', "Publier le menu du jour ou lancer un live à la place d'un coach", 'video', '/admin/coach']];
   return (
     <AdminShell sub="Vue d'ensemble de FitLife">
       <div className="ahero"><Avatar name={user?.name} src={user?.avatar} /><div><small>Bonjour</small><b>{user?.name}</b><small>Administrateur</small></div></div>
