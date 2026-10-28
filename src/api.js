@@ -64,6 +64,7 @@ export const api = {
   publish: (activityId, caption, showRoute) => request('/posts', { method: 'POST', body: { activityId, caption, showRoute } }),
   deletePost: (id) => request(`/posts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   news: () => request('/news'),
+  notifications: (day) => request(`/notifications?day=${day}`),
   liveNow: () => request('/live'),
   startLive: (b) => request('/live', { method: 'POST', body: b }),
   endLive: (id) => request(`/live/${encodeURIComponent(id)}`, { method: 'DELETE' }),

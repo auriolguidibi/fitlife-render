@@ -131,29 +131,48 @@ export function Profile() {
   }
 
   const max = Math.max(d.settings.dailyGoal, ...d.week.map((x) => x.kcal), 1);
+  const role = user?.admin ? 'Administrateur' : user?.coach ? 'Coach' : 'Membre';
+  const hours = Math.floor(d.stats.minutes / 60);
+  const shortcuts = [
+    ['/plans', '🍽️', 'Suivi alimentaire', 'Menus des coachs'],
+    ['/history', '🕘', 'Historique', 'Toute mon activité'],
+    ['/favorites', '❤️', 'Favoris', 'Mes séances préférées'],
+    ['/notifications', '🔔', 'Notifications', 'Lives, menus, défis'],
+    ...(user?.coach ? [['/coach', '🧑‍🏫', 'Espace coach', 'Menus, lives']] : []),
+    ...(user?.admin ? [['/admin', '🛡️', 'Administration', 'Comptes, contenu']] : []),
+  ];
   return (
-    <section className="page">
-      <div className="topbar"><BackBtn /><h2>Profil</h2><span className="sp" /></div>
+    <section className="page pf">
+      <div className="topbar"><BackBtn /><h2>Mon profil</h2><span className="sp" /></div>
       <div className="prof px">
-        <div className="who">
-          <AvatarPicker />
+        <header className="pf-hero">
+          <div className="pf-cover" aria-hidden="true" />
+          <div className="pf-av"><AvatarPicker /></div>
           {editing ? (
             <form onSubmit={(e) => { e.preventDefault(); saveName(); }} className="name-edit">
               <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={saveName} maxLength={40} aria-label="Ton nom" />
             </form>
           ) : (
-            <h2 onClick={() => setEditing(true)}>{d.user.name} <button aria-label="Modifier le nom" className="mini-btn"><Icon n="edit" /></button></h2>
+            <h2 className="pf-name" onClick={() => setEditing(true)}>{d.user.name} <button aria-label="Modifier le nom" className="mini-btn"><Icon n="edit" /></button></h2>
           )}
-          <p>{d.user.email}</p>
+          <p className="pf-mail">{d.user.email}</p>
+          <span className={'pf-role' + (user?.admin || user?.coach ? ' pro' : '')}>{role}</span>
+          <div className="pf-kpis">
+            <div><b>{d.stats.workouts}</b><small>Séances</small></div>
+            <div><b>{d.stats.kcal.toLocaleString('fr')}</b><small>kcal brûlées</small></div>
+            <div><b>{hours ? `${hours} h` : `${d.stats.minutes} min`}</b><small>d'entraînement</small></div>
+            <div><b>{d.stats.streak}</b><small>jours d'affilée</small></div>
+          </div>
+        </header>
+
+        <h3 className="pf-h">Raccourcis</h3>
+        <div className="pf-tiles">
+          {shortcuts.map(([to, em, t, sub]) => (
+            <Link key={to} to={to} className="pf-tile"><i aria-hidden="true">{em}</i><b>{t}</b><small>{sub}</small></Link>
+          ))}
         </div>
 
-        <div className="stats">
-          <div><b>{d.stats.workouts}</b><small>Séances</small></div>
-          <div><b>{d.stats.kcal}</b><small>kcal brûlées</small></div>
-          <div><b>{d.stats.minutes}</b><small>Minutes</small></div>
-          <div><b>{d.stats.streak}</b><small>Jours d'affilée</small></div>
-        </div>
-
+        <h3 className="pf-h">Mon activité</h3>
         <div className="card">
           <div className="card-h"><b>Cette semaine</b><small>kcal / jour</small></div>
           <div className="bars">
@@ -166,12 +185,33 @@ export function Profile() {
             ))}
           </div>
         </div>
-
         <div className="card">
           <div className="card-h"><b>Objectif calorique quotidien</b><small>{goal} kcal</small></div>
           <input type="range" min="100" max="800" step="50" value={goal} onChange={(e) => changeGoal(+e.target.value)} aria-label="Objectif calorique quotidien" />
         </div>
+        <div className="card">
+          <div className="card-h"><b>Mes objectifs</b><Link to="/goals" className="lnk">Modifier</Link></div>
+          <div className="tagrow">{d.goals.length ? d.goals.map((g) => <i key={g.id}>{g.label}</i>) : <i>Aucun objectif sélectionné</i>}</div>
+        </div>
 
+        <h3 className="pf-h">Dernières séances</h3>
+        <div className="card">
+          {d.recent.length ? d.recent.map((r) => (
+            <Link key={r.id} to={`/workout/${r.workoutId}`} className="bk">
+              <span>{r.title}</span><small>{new Date(r.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' })} · {r.kcal} kcal · {Math.max(1, Math.round(r.seconds / 60))} min</small>
+            </Link>
+          )) : <p className="muted">Aucune séance pour le moment : tes séances apparaîtront ici.</p>}
+        </div>
+        {d.bookings.length > 0 && (
+          <div className="card">
+            <div className="card-h"><b>Séances réservées</b></div>
+            {d.bookings.map((b) => (
+              <Link key={b.trainerId} to={`/trainers/${b.trainerId}`} className="bk"><span>{b.name}</span><small>{b.day} · {b.slot}</small></Link>
+            ))}
+          </div>
+        )}
+
+        <h3 className="pf-h">Paramètres</h3>
         <div className="card">
           <div className="card-h"><b>Couleur d'accent</b></div>
           <div className="swatches">
@@ -182,48 +222,11 @@ export function Profile() {
             ))}
           </div>
         </div>
+        <details className="pf-acc card">
+          <summary><b>Informations du compte</b><small>Nom, e-mail, mot de passe</small></summary>
+          <AccountForms />
+        </details>
 
-        <div className="card">
-          <div className="card-h"><b>Mes objectifs</b><Link to="/goals" className="lnk">Modifier</Link></div>
-          <div className="tagrow">{d.goals.length ? d.goals.map((g) => <i key={g.id}>{g.label}</i>) : <i>Aucun objectif sélectionné</i>}</div>
-        </div>
-
-        <AccountForms />
-
-        <div className="card">
-          <div className="card-h"><b>Historique</b><small>{d.recent.length || 0} dernières</small></div>
-          {d.recent.length ? d.recent.map((r) => (
-            <Link key={r.id} to={`/workout/${r.workoutId}`} className="bk">
-              <span>{r.title}</span><small>{new Date(r.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' })} · {r.kcal} kcal · {Math.max(1, Math.round(r.seconds / 60))} min</small>
-            </Link>
-          )) : <p className="muted">Aucune séance pour le moment — tes séances apparaîtront ici.</p>}
-        </div>
-
-        {d.bookings.length > 0 && (
-          <div className="card">
-            <div className="card-h"><b>Séances réservées</b></div>
-            {d.bookings.map((b) => (
-              <Link key={b.trainerId} to={`/trainers/${b.trainerId}`} className="bk"><span>{b.name}</span><small>{b.day} · {b.slot}</small></Link>
-            ))}
-          </div>
-        )}
-
-        <Link to="/history" className="row">
-          <div className="t"><b>Mon historique</b><small>Activités, séances, publications, défis, événements</small></div>
-        </Link>
-        <Link to="/plans" className="row">
-          <div className="t"><b>Planning alimentaire</b><small>Les repas proposés par les coachs, jour par jour</small></div>
-        </Link>
-        {user?.coach && (
-          <Link to="/coach" className="row admin-link">
-            <div className="t"><b>Espace coach</b><small>Planning alimentaire, lives</small></div>
-          </Link>
-        )}
-        {user?.admin && (
-          <Link to="/admin" className="row admin-link">
-            <div className="t"><b>Espace administrateur</b><small>Comptes, parcours, contenu, événements</small></div>
-          </Link>
-        )}
         <button className="btn ghost" onClick={doLogout}>Se déconnecter</button>
         <button className="btn ghost danger" onClick={resetProgress}>Réinitialiser ma progression</button>
         {!danger ? (

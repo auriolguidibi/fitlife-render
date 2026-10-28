@@ -24,6 +24,7 @@ const P = {
   chat: <path d="M4 5h16v11H9l-5 4z" />,
   video: <><rect x="3" y="6" width="12" height="12" rx="2" /><path d="M15 10l6-3v10l-6-3z" /></>,
   send: <path d="M4 12l16-8-6 16-2-7z" />,
+  bell: <path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0" />,
   plus: <path d="M12 5v14M5 12h14" />,
   mic: <><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></>,
   hangup: <path d="M3 14c5-5 13-5 18 0l-2 3-3-1.500v-3c-3-1-6-1-6 0v3L5 17z" />,

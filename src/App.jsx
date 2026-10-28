@@ -18,6 +18,7 @@ import { Favorites, Profile } from './pages/Account';
 import { Activity, ActivityDetail, ActivityLive } from './pages/Activity';
 import { Community } from './pages/Community';
 import News from './pages/News';
+import Notifications from './pages/Notifications';
 import LiveBanner from './components/LiveBanner';
 import Photo from './pages/Photo';
 import History from './pages/History';
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/goals" element={<Goals />} />
           <Route path="/photo" element={<Photo />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
           <Route path="/news" element={<RequireAuth><News /></RequireAuth>} />
           <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
           <Route path="/courses/:id" element={<RequireAuth><CourseDetail /></RequireAuth>} />

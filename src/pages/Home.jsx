@@ -9,6 +9,8 @@ import { assetUrl } from '../lib/media';
 import { TypePhoto } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
 import NewsHome from '../components/NewsHome';
+import MenuHome from '../components/MenuHome';
+import { useNotifs } from '../lib/notifs';
 import { PHOTO_SKIP_KEY } from './Photo';
 
 const BASE = import.meta.env.BASE_URL;
@@ -37,6 +39,7 @@ export default function Home() {
   const [searching, setSearching] = useState(false);
   const [moreFeat, setMoreFeat] = useState(false);   // « À la une » : une carte, puis les autres sur demande
   const stamp = useRef(0);
+  const { unread } = useNotifs(!!user?.onboarded);
 
   const load = useCallback(() => {
     setError('');
@@ -77,6 +80,9 @@ export default function Home() {
           <b>{user.name}</b>
           <span className="sel-t">››› CHOISIS TON ENTRAÎNEMENT</span>
         </div>
+        <Link to="/notifications" className="bell" aria-label={unread ? `Notifications : ${unread} non lue${unread > 1 ? 's' : ''}` : 'Notifications'}>
+          <Icon n="bell" />{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}
+        </Link>
         <Link to="/profile" aria-label="Profil"><Avatar name={user.name} src={user.avatar} /></Link>
       </header>
 
@@ -126,6 +132,7 @@ export default function Home() {
               <div className="t"><b>Lancer un live</b><small>Annonce ton direct : les membres sont prévenus et peuvent le rejoindre</small></div>
             </Link>
           )}
+          <MenuHome />
           <NewsHome />
 
           {data.courses.length > 0 && (

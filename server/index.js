@@ -1187,6 +1187,33 @@ app.get('/api/plans', requireAuth, ah(async (req, res) => {
   res.json({ day, plans: list.filter((p) => cards.has(String(p.coach_id))).map((p) => ({ ...planJson(p), coach: { id: String(p.coach_id), name: cards.get(String(p.coach_id)).name, avatar: cards.get(String(p.coach_id)).avatar_url || null } })) });
 }));
 
+// centre de notifications : lives à rejoindre, menus du jour publiés par les coachs, nouveaux défis, événements proches
+app.get('/api/notifications', requireAuth, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const now = Date.now();
+  const day = validDay(String(req.query.day ?? '')) ? String(req.query.day) : new Date().toISOString().slice(0, 10);
+  const [liveRows, planRows, chRows, evRows] = await Promise.all([
+    lives.find({ ended_at: null, starts_at: { $lte: now + DAY, $gt: now - LIVE_MAX } }).sort({ starts_at: -1 }).limit(5).toArray(),
+    mealPlans.find({ day }).sort({ updated_at: -1 }).limit(10).toArray(),
+    challenges.find({ ends_at: { $gt: now }, created_at: { $gt: now - 7 * DAY } }).sort({ created_at: -1 }).limit(5).toArray(),
+    events.find({ starts_at: { $gt: now, $lt: now + 3 * DAY } }).sort({ starts_at: 1 }).limit(5).toArray(),
+  ]);
+  const coachNames = await nameMap([...new Set(planRows.map((p) => p.coach_id))]);
+  const items = [];
+  for (const l of liveRows) {
+    const st = liveState(l, now);
+    if (st !== 'ended') items.push({ id: 'l' + l._id, type: 'live', state: st, title: l.title, text: `${l.host_name}`, at: l.starts_at, to: '/news' });
+  }
+  for (const p of planRows) {
+    if (!coachNames.has(String(p.coach_id))) continue;
+    items.push({ id: 'm' + p._id, type: 'menu', title: `Menu du jour de ${coachNames.get(String(p.coach_id))}`, text: p.meals.map((m) => m.label).join(' · '), at: p.updated_at, to: '/plans' });
+  }
+  for (const c of chRows) items.push({ id: 'c' + c._id, type: 'challenge', title: c.official ? `Défi officiel : ${c.title}` : `Nouveau défi : ${c.title}`, text: `Par ${c.creator_name}`, at: c.created_at, to: `/activity/challenges/${c._id}` });
+  for (const e of evRows) items.push({ id: 'e' + e._id, type: 'event', title: e.title, text: e.place || 'Événement à venir', at: e.starts_at, to: `/activity/events/${e._id}` });
+  items.sort((a, b) => (b.state === 'live') - (a.state === 'live') || b.at - a.at);
+  res.json({ items });
+}));
+
 app.put('/api/bookings/:trainerId', requireAuth, ah(async (req, res) => {
   const { trainerId } = req.params;
   if (!(await trainers.findOne({ _id: trainerId }, { projection: { _id: 1 } }))) return res.status(404).json({ error: 'Coach introuvable.' });
