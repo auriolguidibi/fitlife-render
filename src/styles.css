@@ -778,3 +778,57 @@ body{font-weight:400}
 .onb .brand-name{display:inline-flex;align-items:center;line-height:1}
 .onb .brand-name span{background:var(--lime);color:var(--on-lime);padding:2px 8px;border-radius:8px;margin-left:3px}
 .onb .brand .brand-name{background:none;color:#fff;padding:0;margin:0;border-radius:0}
+
+/* ---------- espace administrateur : thème de l'application ---------- */
+.admin{padding-bottom:calc(var(--tab,78px) + 24px)}
+.admin .topbar h2{font-weight:800}
+.asub{color:var(--mut);font-size:13px;margin:-6px 0 12px}
+.ahero{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--lime) 24%,var(--card)),var(--card) 70%);border:1px solid color-mix(in srgb,var(--lime) 28%,transparent);border-radius:18px;padding:16px;margin:2px 0 12px}
+.ahero .avatar{width:56px;height:56px;font-size:20px;flex:none}
+.ahero div{min-width:0}
+.ahero b{display:block;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ahero small{display:block;color:var(--mut);font-size:12.5px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.kpi{background:var(--card);border:var(--edge);border-radius:14px;padding:12px 10px;min-width:0}
+.kpi small{display:block;color:var(--mut);font-size:11px;margin-bottom:4px}
+.kpi b{display:block;font-size:clamp(15px,4.6vw,19px);color:var(--ink);white-space:nowrap}
+.kpi b em{font-style:normal;font-size:11px;color:var(--mut)}
+.weekcard b{font-size:14px}
+.weekcard p{margin-top:4px}
+.admin-grid{gap:8px}
+.admin .stat-card{position:relative;padding:14px;border-radius:14px;gap:2px}
+.admin .stat-card b{font-size:24px}
+.admin .stat-card small{color:var(--mut)}
+.sc-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--lime) 16%,transparent);color:var(--lime);font-size:15px;margin-bottom:8px}
+.ash{margin:20px 0 8px}
+.alist{display:grid;gap:8px}
+.alink{display:flex;align-items:center;gap:12px;background:var(--card);border:var(--edge);border-radius:14px;padding:12px 14px}
+.alink>i{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--lime) 16%,transparent);color:var(--lime);font-size:18px;flex:none;font-style:normal}
+.alink span{flex:1;min-width:0}
+.alink b{display:block;font-size:14.5px}
+.alink small{display:block;color:var(--mut);font-size:12px}
+.alink em{font-style:normal;font-size:22px;color:var(--mut)}
+.best.role{margin-left:6px}
+.best.role.coach{background:#3b82f6;color:#fff}
+.rolecard .btn{margin-top:6px}
+/* planning alimentaire */
+.plan-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.plan-h b{display:block}
+.plan-h small{color:var(--mut)}
+.plan .meal{padding:10px 0;border-top:1px solid var(--line)}
+.plan .meal b{font-size:13px;color:var(--lime)}
+.plan .meal p{font-size:14px;margin-top:2px;white-space:pre-wrap}
+.meal-edit{padding:12px}
+
+/* ---------- vidéo par exercice ---------- */
+.ex .ex-item{display:block;padding:0;background:transparent;border:0;border-radius:0}
+.ex .ex-line{display:flex;align-items:center;gap:12px;background:var(--card);padding:12px 14px;border-radius:14px;font-size:13.5px}
+.ex .ex-line span{margin-left:auto}
+.ex .ex-demo{display:inline-flex;align-items:center;gap:5px;flex:none;min-height:32px;padding:0 12px;border-radius:16px;background:var(--lime);color:var(--on-lime);font-size:12px;font-weight:700}
+.ex .ex-demo svg{width:12px;height:12px}
+.ex .ex-player{display:block;padding:0;background:#000;margin:8px 0 4px;border-radius:14px}
+.ex-player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.ex-block{margin-bottom:10px}
+.ex-block .ex-row{margin-bottom:4px}
+.ex-video{width:100%;height:42px;border-radius:10px;background:var(--card2);border:1px solid var(--line);padding:0 10px;font-size:13px;color:var(--ink);outline:0;min-width:0}
+.ex-video:focus{border-color:var(--lime)}

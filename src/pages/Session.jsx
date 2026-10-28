@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useStore } from '../store';
 import { SONGS } from '../data';
+import { Vid } from '../components/Media';
 import WorkoutVisual from '../components/WorkoutVisual';
 import { moveFor } from '../components/ExerciseAnim';
 import Icon from '../components/Icon';
@@ -122,7 +123,9 @@ export function Session() {
 
   return (
     <section className={'sess' + (run ? '' : ' paused')}>
-      <WorkoutVisual w={w} play={run} pos="center 30%" move={moveFor(e.name, w.title) || undefined} label={e.name} />
+      {videoKind(e.video) === 'file'
+        ? <Vid src={assetUrl(e.video)} poster={w.photo} play={run} pos="center 30%" />
+        : <WorkoutVisual w={w} play={run} pos="center 30%" move={moveFor(e.name, w.title) || undefined} label={e.name} />}
       <div className="shade" />
       <div className="top">
         <button className="icon-btn glass back" onClick={quit} aria-label="Retour"><Icon n="back" /></button>

@@ -81,7 +81,7 @@ function WorkoutForm({ item, courses, goals, onDone, onCancel }) {
   const [v, set, setV] = useForm({
     title: item?.title ?? '', courseId: item?.courseId ?? courses[0]?.id ?? '', level: item?.level ?? 'Beginner', minutes: item?.minutes ?? '', kcal: item?.kcal ?? '',
     description: item?.description ?? '', photo: item?.photo ?? '', video: item?.video ?? '', goals: item?.goals ?? [],
-    exercises: item?.exercises?.length ? item.exercises : [{ name: '', reps: 10, seconds: 30 }],
+    exercises: item?.exercises?.length ? item.exercises : [{ name: '', reps: 10, seconds: 30, video: '' }],
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -94,7 +94,7 @@ function WorkoutForm({ item, courses, goals, onDone, onCancel }) {
     try {
       await api.admin.save('workouts', item?.id, {
         ...v, minutes: parseInt(v.minutes, 10), kcal: parseInt(v.kcal, 10),
-        exercises: v.exercises.map((x) => ({ name: x.name, reps: parseInt(x.reps, 10), seconds: parseInt(x.seconds, 10) })),
+        exercises: v.exercises.map((x) => ({ name: x.name, reps: parseInt(x.reps, 10), seconds: parseInt(x.seconds, 10), video: (x.video ?? '').trim() })),
       });
       onDone();
     } catch (err) { setError(err.message); setBusy(false); }
@@ -124,15 +124,18 @@ function WorkoutForm({ item, courses, goals, onDone, onCancel }) {
       )}
       <div className="fld"><label>Exercices</label>
         {v.exercises.map((x, i) => (
-          <div key={i} className="ex-row">
-            <input aria-label={`Exercice ${i + 1}`} placeholder="Nom" value={x.name} onChange={(e) => setEx(i, 'name', e.target.value)} maxLength={60} />
-            <input aria-label="Répétitions" inputMode="numeric" value={x.reps} onChange={(e) => setEx(i, 'reps', e.target.value)} title="Répétitions" />
-            <input aria-label="Secondes" inputMode="numeric" value={x.seconds} onChange={(e) => setEx(i, 'seconds', e.target.value)} title="Secondes" />
-            <button type="button" className="mini-btn" aria-label="Retirer l'exercice" onClick={() => setV((s) => ({ ...s, exercises: s.exercises.filter((_, j) => j !== i) }))}>✕</button>
+          <div key={i} className="ex-block">
+            <div className="ex-row">
+              <input aria-label={`Exercice ${i + 1}`} placeholder="Nom" value={x.name} onChange={(e) => setEx(i, 'name', e.target.value)} maxLength={60} />
+              <input aria-label="Répétitions" inputMode="numeric" value={x.reps} onChange={(e) => setEx(i, 'reps', e.target.value)} title="Répétitions" />
+              <input aria-label="Secondes" inputMode="numeric" value={x.seconds} onChange={(e) => setEx(i, 'seconds', e.target.value)} title="Secondes" />
+              <button type="button" className="mini-btn" aria-label="Retirer l'exercice" onClick={() => setV((s) => ({ ...s, exercises: s.exercises.filter((_, j) => j !== i) }))}>✕</button>
+            </div>
+            <input className="ex-video" aria-label={`Vidéo de l'exercice ${i + 1}`} inputMode="url" placeholder="Vidéo de l'exercice : lien YouTube, Vimeo ou .mp4" value={x.video ?? ''} onChange={(e) => setEx(i, 'video', e.target.value)} maxLength={500} />
           </div>
         ))}
-        <small className="hint">Nom · répétitions · durée en secondes</small>
-        <button type="button" className="btn ghost small" onClick={() => setV((s) => ({ ...s, exercises: [...s.exercises, { name: '', reps: 10, seconds: 30 }] }))}>Ajouter un exercice</button>
+        <small className="hint">Nom · répétitions · durée en secondes · lien vidéo de démonstration (facultatif)</small>
+        <button type="button" className="btn ghost small" onClick={() => setV((s) => ({ ...s, exercises: [...s.exercises, { name: '', reps: 10, seconds: 30, video: '' }] }))}>Ajouter un exercice</button>
       </div>
     </FormShell>
   );

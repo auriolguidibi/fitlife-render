@@ -31,7 +31,7 @@ export default function Welcome() {
 
   const proceed = useCallback((u) => {
     if (u?.name) dispatch({ type: 'name', name: u.name });
-    nav(u?.onboarded ? '/home' : '/goals', { replace: true });
+    nav(u?.admin ? '/admin' : u?.onboarded ? '/home' : '/goals', { replace: true });
   }, [dispatch, nav]);
 
   const openSheet = (mode) => (e) => { opener.current = e.currentTarget; setSheet(mode); };

@@ -137,7 +137,6 @@ html,body{background:#05070c}
 .admin-grid{grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
 .stat-card{position:relative;overflow:hidden;gap:4px;padding:18px;border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:var(--edge);transition:transform .18s,border-color .18s}
 .stat-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--lime) 50%,transparent)}
-.stat-card i{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--lime);color:var(--on-lime);font-size:19px;font-style:normal;margin-bottom:8px;box-shadow:var(--glow)}
 .stat-card b{font-size:32px;font-weight:900;letter-spacing:-1px;color:#fff}
 .stat-card small{font-size:12.5px;font-weight:600;color:var(--mut)}
 .admin .row{min-height:72px}
@@ -236,4 +235,13 @@ html,body{background:#05070c}
 @media (min-width:900px){
   .news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .news-grid.posts{align-items:start}
+}
+
+/* exercices : mini-animation dans la ligne (avec le bouton vidéo de l'admin) */
+.ex .ex-line .ex-anim{width:44px;height:44px;border-radius:12px;flex:none}
+.ex .ex-line{padding:8px 12px 8px 10px}
+/* espace admin : la barre du bas devient la barre latérale sur grand écran */
+@media (min-width:900px){
+  .app.bare .page.admin{margin-left:var(--side);max-width:none;padding:28px 36px 48px}
+  .app.bare .page.admin>*{max-width:980px}
 }

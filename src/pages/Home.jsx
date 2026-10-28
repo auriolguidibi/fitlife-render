@@ -62,6 +62,7 @@ export default function Home() {
 
   if (authLoading) return <section className="page"><HomeSkeleton /></section>;
   if (!user) return <Navigate to="/welcome" replace />;
+  if (user.admin) return <Navigate to="/admin" replace />;
   if (!user.onboarded) return <Navigate to="/goals" replace />;
 
   const pct = data ? Math.min(100, Math.round((data.today.kcal / data.today.goal) * 100)) : 0;
