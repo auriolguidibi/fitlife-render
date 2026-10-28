@@ -392,3 +392,22 @@ html,body{background:#05070c}
   .plans-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
   .menu-home{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
+
+/* séance : seul le bouton pause / reprendre reste dans la barre */
+.sess .bar{justify-content:center;background:none;border:0;backdrop-filter:none}
+.sess .bar .pp{width:64px;height:64px;box-shadow:var(--glow)}
+
+.has-live .app:not(.bare) .main{padding-top:80px}
+
+/* démonstration animée : taille maîtrisée, bouton lecture rangé dans le coin */
+.xa-stage .xanim{height:100%;width:auto;max-width:100%;aspect-ratio:1;margin:0}
+.det-hero .xa-stage{padding-top:44px;padding-bottom:22px}
+.det-hero .xa-stage .xanim,.sess .xa-stage .xanim{margin-top:0}
+.det-hero:has(.xa-stage) .play{left:auto;right:18px;top:auto;bottom:18px;transform:none;width:60px;height:60px}
+.det-hero .xa-stage{padding-top:60px;padding-bottom:50px}
+.det-hero .xa-tag{bottom:16px}
+
+/* taille de la démonstration : jamais plus large que l'écran */
+.det-hero .xa-stage .xanim{height:100%;width:auto;max-width:100%}
+.sess .xa-stage{padding:150px 0 220px}
+.sess .xa-stage .xanim{height:auto;width:min(92%,calc(100dvh - 380px),460px);aspect-ratio:1}

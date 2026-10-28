@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerSocial } from './social.js';
 import { createRealtime } from './realtime.js';
-import { activities, bookings, challenges, courses, db, eventMembers, events, favorites, getContent, goals, lives, logs, mealPlans, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
+import { activities, bookings, calls, challenges, communityMembers, courses, db, eventMembers, events, favorites, getContent, goals, lives, logs, mealPlans, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
 
 const PORT = Number(process.env.PORT) || 5181;
 const PROD = process.env.NODE_ENV === 'production';
@@ -1050,6 +1050,15 @@ const liveJson = (l, uid, user) => ({
   id: String(l._id), title: l.title, description: l.description, url: l.url, startsAt: l.starts_at, state: liveState(l),
   host: { id: String(l.host_id), name: l.host_name }, mine: String(l.host_id) === String(uid), canEnd: String(l.host_id) === String(uid) || isAdmin(user),
 });
+// lives vidéo lancés dans les communautés dont l'utilisateur est membre (salle d'appel de l'application)
+async function communityLives(uid, windowMs) {
+  const now = Date.now();
+  const mine = (await communityMembers.find({ user_id: uid, status: 'active' }).project({ community_id: 1 }).toArray()).map((m) => m.community_id);
+  if (!mine.length) return [];
+  const rows = await calls.find({ kind: 'live', ended_at: null, community_id: { $in: mine }, host_id: { $ne: uid }, starts_at: { $lte: now + windowMs, $gt: now - LIVE_MAX } }).sort({ starts_at: -1 }).limit(5).toArray();
+  const names = await nameMap([...new Set(rows.map((c) => c.host_id))]);
+  return rows.map((c) => ({ id: 'c' + c._id, title: c.title, state: c.starts_at <= now + 600000 ? 'live' : 'scheduled', startsAt: c.starts_at, host: { id: String(c.host_id), name: names.get(String(c.host_id)) ?? 'Coach' }, to: `/social/call/${c._id}` }));
+}
 const requireHost = [requireAuth, (req, res, next) => (canHost(req.user) ? next() : res.status(403).json({ error: 'Réservé aux administrateurs et aux coachs.' }))];
 
 app.get('/api/news', requireAuth, ah(async (req, res) => {
@@ -1083,7 +1092,8 @@ app.get('/api/live', requireAuth, ah(async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const now = Date.now();
   const rows = await lives.find({ ended_at: null, starts_at: { $lte: now + 15 * 60000, $gt: now - LIVE_MAX } }).sort({ starts_at: -1 }).limit(5).toArray();
-  res.json({ lives: rows.filter((l) => liveState(l) !== 'ended').map((l) => liveJson(l, req.user._id, req.user)) });
+  const own = rows.filter((l) => liveState(l) !== 'ended').map((l) => ({ ...liveJson(l, req.user._id, req.user), to: '/news' }));
+  res.json({ lives: [...own.filter((l) => !l.mine), ...(await communityLives(req.user._id, 15 * 60000))] });
 }));
 
 function liveBody(b) {
@@ -1202,8 +1212,9 @@ app.get('/api/notifications', requireAuth, ah(async (req, res) => {
   const items = [];
   for (const l of liveRows) {
     const st = liveState(l, now);
-    if (st !== 'ended') items.push({ id: 'l' + l._id, type: 'live', state: st, title: l.title, text: `${l.host_name}`, at: l.starts_at, to: '/news' });
+    if (st !== 'ended' && String(l.host_id) !== String(req.user._id)) items.push({ id: 'l' + l._id, type: 'live', state: st, title: l.title, text: `${l.host_name}`, at: l.starts_at, to: '/news' });
   }
+  for (const c of await communityLives(req.user._id, DAY)) items.push({ id: c.id, type: 'live', state: c.state, title: c.title, text: c.host.name, at: c.startsAt, to: c.to });
   for (const p of planRows) {
     if (!coachNames.has(String(p.coach_id))) continue;
     items.push({ id: 'm' + p._id, type: 'menu', title: `Menu du jour de ${coachNames.get(String(p.coach_id))}`, text: p.meals.map((m) => m.label).join(' · '), at: p.updated_at, to: '/plans' });

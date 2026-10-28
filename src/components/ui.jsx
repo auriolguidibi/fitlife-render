@@ -37,11 +37,6 @@ export function Fav({ id, className = '' }) {
   );
 }
 
-const FACES = [['#ffb36b', '#e0663b'], ['#7bd0ff', '#3b79e0'], ['#ffd36b', '#d99a1e'], ['#c58bff', '#7a3bd9'], ['#8ef0b0', '#2fb56a']];
-export const Faces = () => (
-  <div className="faces">{FACES.map((c, i) => <i key={i} style={{ background: `linear-gradient(135deg,${c[0]},${c[1]})` }} />)}</div>
-);
-
 export function WorkoutCard({ w }) {
   return (
     <Link to={`/workout/${w.id}`} className="feat">
@@ -49,7 +44,6 @@ export function WorkoutCard({ w }) {
       <div className="shade" />
       <h3>{w.title}</h3>
       <div className="kcal"><span>{w.kcal}<small>Kcal</small></span></div>
-      <Faces />
       <Fav id={w.id} className="on-art" />
     </Link>
   );

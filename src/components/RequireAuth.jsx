@@ -24,8 +24,12 @@ export function RequireAdmin({ children }) {
 /* Aligne les favoris locaux sur les marqueurs `fav` renvoyés par le serveur. */
 export function useSyncFavs(workouts) {
   const { dispatch } = useStore();
+  // clé stable : l'effet ne se relance que si les identifiants ou les marqueurs changent
+  // (les pages passent un nouveau tableau à chaque rendu, ce qui bouclait à l'infini)
+  const key = workouts?.length ? workouts.map((w) => `${w.id}:${w.fav ? 1 : 0}`).join('|') : '';
   useEffect(() => {
-    if (!workouts?.length) return;
-    dispatch({ type: 'syncFavs', on: workouts.filter((w) => w.fav).map((w) => w.id), off: workouts.filter((w) => !w.fav).map((w) => w.id) });
-  }, [workouts, dispatch]);
+    if (!key) return;
+    const list = key.split('|').map((k) => k.split(':'));
+    dispatch({ type: 'syncFavs', on: list.filter((x) => x[1] === '1').map((x) => x[0]), off: list.filter((x) => x[1] === '0').map((x) => x[0]) });
+  }, [key, dispatch]);
 }

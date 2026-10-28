@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useStore } from '../store';
-import { SONGS } from '../data';
 import { Vid } from '../components/Media';
 import WorkoutVisual from '../components/WorkoutVisual';
 import { moveFor } from '../components/ExerciseAnim';
@@ -28,7 +27,6 @@ export function Session() {
   const [exIdx, setExIdx] = useState(0);
   const [inEx, setInEx] = useState(0);       // secondes dans l'exercice courant
   const [run, setRun] = useState(true);
-  const [song, setSong] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const latest = useRef({ t: 0, exIdx: 0 });
   latest.current = { t, exIdx };
@@ -143,9 +141,6 @@ export function Session() {
           <button className="fin" onClick={finish} disabled={finishing}>{finishing ? 'Enregistrement…' : 'Terminer'}</button>
         </div>
         <div className="bar">
-          <div className="art-m"><Icon n="music" /></div>
-          <div className="tt">{SONGS[song][0]}<small>{SONGS[song][1]}</small></div>
-          <button className="sk" aria-label="Titre suivant" onClick={() => setSong((song + 1) % SONGS.length)}><Icon n="next" /></button>
           <button className="pp" aria-label={run ? 'Pause' : 'Reprendre'} onClick={() => setRun(!run)} disabled={finishing}><Icon n={run ? 'pause' : 'play'} /></button>
         </div>
       </div>
