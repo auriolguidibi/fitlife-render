@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../api';
-import { Vid } from '../components/Media';
+import WorkoutVisual from '../components/WorkoutVisual';
+import ExerciseAnim, { moveFor } from '../components/ExerciseAnim';
 import Icon from '../components/Icon';
 import { assetUrl, embedUrl, videoKind } from '../lib/media';
 import { levelFr } from '../lib/labels';
@@ -51,7 +52,7 @@ export function Workout() {
   return (
     <section className="page detail">
       <div className="det-hero">
-        <Vid src={w.video} poster={w.photo} pos="center 25%" />
+        <WorkoutVisual w={w} pos="center 25%" />
         <div className="shade" />
         <div className="tb"><BackBtn glass /><Fav id={w.id} className="glass" /></div>
         <Link to={`/session/${w.id}`} className="play" aria-label="Lancer"><Icon n="play" /></Link>
@@ -74,7 +75,12 @@ export function Workout() {
           <p className="done-note"><Icon n="check" /> Tu as déjà fait cette séance {mine.count} fois · dernière fois le {new Date(mine.last).toLocaleDateString('fr', { month: 'short', day: 'numeric' })}</p>
         )}
         <h3 className="h3">Exercices</h3>
-        <div className="ex">{w.exercises.map((e, i) => <div key={e.name}><em>{i + 1}</em>{e.name}<span>x{e.reps}</span></div>)}</div>
+        <div className="ex ex-vis">{w.exercises.map((e, i) => (
+          <div key={e.name + i}>
+            <i className="ex-anim"><ExerciseAnim move={moveFor(e.name, w.title) || 'jack'} compact label={e.name} /></i>
+            <b><em>{i + 1}</em>{e.name}<small>{e.seconds} s</small></b><span>x{e.reps}</span>
+          </div>
+        ))}</div>
         <Link to={`/session/${w.id}`} className="btn">C'est parti</Link>
         {related.length > 0 && (
           <>

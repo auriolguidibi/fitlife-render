@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerSocial } from './social.js';
 import { createRealtime } from './realtime.js';
-import { activities, bookings, challenges, courses, db, eventMembers, events, favorites, getContent, goals, logs, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
+import { activities, bookings, challenges, courses, db, eventMembers, events, favorites, getContent, goals, lives, logs, members, posts, runs, sessions, trainers, users, workouts } from './db.js';
 
 const PORT = Number(process.env.PORT) || 5181;
 const PROD = process.env.NODE_ENV === 'production';
@@ -34,7 +34,10 @@ const cookies = (req) => Object.fromEntries((req.headers.cookie || '').split(';'
 // administrateurs : adresses e-mail listées dans ADMIN_EMAILS (séparées par des virgules), jamais écrites dans le code
 const ADMINS = new Set((process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean));
 const isAdmin = (u) => ADMINS.has(String(u.email).toLowerCase());
-const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), avatar: u.avatar_url || null });
+// coachs : adresses listées dans COACH_EMAILS ; ils peuvent lancer des lives sans être administrateurs
+const COACHES = new Set((process.env.COACH_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean));
+const canHost = (u) => isAdmin(u) || COACHES.has(String(u.email).toLowerCase());
+const publicUser = (u) => ({ id: String(u._id), name: u.name, email: u.email, onboarded: !!u.onboarded, theme: u.theme || 'lime', admin: isAdmin(u), coach: canHost(u), avatar: u.avatar_url || null });
 // Express 4 ne capte pas les erreurs des handlers async : on les transmet au gestionnaire d'erreurs
 const ah = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 const toId = (s) => (typeof s === 'string' && /^[0-9a-f]{24}$/i.test(s) ? new ObjectId(s) : null);
@@ -1006,6 +1009,74 @@ app.get('/api/admin/events/:id/participants', requireAdmin, ah(async (req, res) 
   const names = await nameMap(mem.map((m) => m.user_id));
   const mails = new Map((await users.find({ _id: { $in: mem.map((m) => m.user_id) } }).project({ email: 1 }).toArray()).map((u) => [String(u._id), u.email]));
   res.json({ participants: mem.map((m) => ({ id: String(m.user_id), name: names.get(String(m.user_id)) ?? 'Sportif', email: mails.get(String(m.user_id)) ?? '', joinedAt: m.joined_at })) });
+}));
+
+/* ----- actualités : nouveaux défis, publications, événements et lives ----- */
+const LIVE_MAX = 6 * 3600000;                           // un live est considéré fini 6 h après son début
+const liveState = (l, now = Date.now()) => (l.ended_at || now > l.starts_at + LIVE_MAX ? 'ended' : now < l.starts_at ? 'scheduled' : 'live');
+const liveJson = (l, uid, user) => ({
+  id: String(l._id), title: l.title, description: l.description, url: l.url, startsAt: l.starts_at, state: liveState(l),
+  host: { id: String(l.host_id), name: l.host_name }, mine: String(l.host_id) === String(uid), canEnd: String(l.host_id) === String(uid) || isAdmin(user),
+});
+const requireHost = [requireAuth, (req, res, next) => (canHost(req.user) ? next() : res.status(403).json({ error: 'Réservé aux administrateurs et aux coachs.' }))];
+
+app.get('/api/news', requireAuth, ah(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const uid = req.user._id, now = Date.now();
+  const [liveRows, chRows, postRows, evRows] = await Promise.all([
+    lives.find({ ended_at: null, starts_at: { $gt: now - LIVE_MAX } }).sort({ starts_at: 1 }).limit(10).toArray(),
+    challenges.find({ ends_at: { $gt: now } }).sort({ created_at: -1 }).limit(8).toArray(),
+    posts.find().sort({ created_at: -1 }).limit(8).toArray(),
+    events.find({ starts_at: { $gt: now - DAY } }).sort({ starts_at: 1 }).limit(5).toArray(),
+  ]);
+  const chIds = chRows.map((c) => c._id);
+  const [counts, mine, info, evN] = await Promise.all([
+    members.aggregate([{ $match: { challenge_id: { $in: chIds } } }, { $group: { _id: '$challenge_id', n: { $sum: 1 } } }]).toArray(),
+    members.find({ user_id: uid, challenge_id: { $in: chIds } }).toArray(),
+    userInfo([...new Set(postRows.map((p) => p.user_id))]),
+    evCounts(evRows.map((e) => e._id)),
+  ]);
+  const nBy = new Map(counts.map((r) => [String(r._id), r.n])), joined = new Set(mine.map((m) => String(m.challenge_id)));
+  res.json({
+    canHost: canHost(req.user),
+    lives: liveRows.filter((l) => liveState(l) !== 'ended').map((l) => liveJson(l, uid, req.user)).sort((a, b) => (a.state === 'live' ? -1 : 1) - (b.state === 'live' ? -1 : 1) || a.startsAt - b.startsAt),
+    challenges: chRows.map((c) => chJson(c, { joined: joined.has(String(c._id)), participants: nBy.get(String(c._id)) ?? 0, createdAt: c.created_at })),
+    posts: postRows.map((p) => postJson(p, uid, info)),
+    events: evRows.map((e) => evJson(e, { participants: evN.get(String(e._id)) ?? 0 })),
+  });
+}));
+
+function liveBody(b) {
+  const title = cleanStr(b.title, 3, 80), description = String(b.description ?? '').trim().slice(0, 500);
+  const url = cleanUrl(b.url);
+  const startsAt = b.startsAt == null || b.startsAt === '' ? Date.now() : Number(b.startsAt);
+  if (!title) return { error: 'Donne un titre au live (3 à 80 caractères).' };
+  if (!url || !/^https?:\/\//i.test(url)) return { error: 'Colle le lien du live (YouTube, Vimeo…) en commençant par https://.' };
+  if (!Number.isFinite(startsAt) || startsAt < Date.now() - 3600000 || startsAt > Date.now() + 90 * DAY) return { error: 'Choisis une date de début dans les 90 prochains jours.' };
+  return { doc: { title, description, url, starts_at: Math.round(startsAt) } };
+}
+app.post('/api/live', requireHost, ah(async (req, res) => {
+  const r = liveBody(req.body ?? {});
+  if (r.error) return res.status(400).json({ error: r.error });
+  const doc = { ...r.doc, host_id: req.user._id, host_name: req.user.name, created_at: Date.now(), ended_at: null };
+  doc._id = (await lives.insertOne(doc)).insertedId;
+  res.status(201).json({ live: liveJson(doc, req.user._id, req.user) });
+}));
+app.put('/api/live/:id', requireHost, ah(async (req, res) => {
+  const id = toId(req.params.id), r = liveBody(req.body ?? {});
+  if (r.error) return res.status(400).json({ error: r.error });
+  const l = id && await lives.findOne({ _id: id });
+  if (!l) return res.status(404).json({ error: 'Live introuvable.' });
+  if (String(l.host_id) !== String(req.user._id) && !isAdmin(req.user)) return res.status(403).json({ error: "Seul l'organisateur peut modifier ce live." });
+  await lives.updateOne({ _id: id }, { $set: r.doc });
+  res.json({ ok: true });
+}));
+app.delete('/api/live/:id', requireHost, ah(async (req, res) => {
+  const id = toId(req.params.id), l = id && await lives.findOne({ _id: id });
+  if (!l) return res.json({ ok: true });
+  if (String(l.host_id) !== String(req.user._id) && !isAdmin(req.user)) return res.status(403).json({ error: "Seul l'organisateur peut terminer ce live." });
+  await lives.updateOne({ _id: id }, { $set: { ended_at: Date.now() } });
+  res.json({ ok: true });
 }));
 
 /* ----- coachs et réservations ----- */

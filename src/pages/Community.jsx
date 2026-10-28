@@ -7,7 +7,7 @@ import Avatar from '../components/Avatar';
 import { BackBtn, Empty } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtPace, typeOf } from '../lib/tracker';
 
-function PostCard({ p, admin, onDelete }) {
+export function PostCard({ p, admin, onDelete }) {
   const a = p.activity;
   return (
     <article className="post">

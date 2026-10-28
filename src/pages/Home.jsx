@@ -120,6 +120,8 @@ export default function Home() {
 
           {data.courses.length > 0 && (
             <div className="chips px" aria-label="Cours">
+              <Link to="/news" className="chip on">Actualités</Link>
+              <Link to="/favorites" className="chip">Favoris</Link>
               {data.courses.map((c) => <Link key={c.id} to={`/courses/${c.id}`} className="chip">{c.name}</Link>)}
             </div>
           )}

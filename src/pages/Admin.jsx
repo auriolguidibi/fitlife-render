@@ -5,26 +5,34 @@ import { useStore } from '../store';
 import RouteMap from '../components/RouteMap';
 import { TypePhoto, dateLabel, timeLabel } from '../components/ActivityBits';
 import Avatar from '../components/Avatar';
+import Icon from '../components/Icon';
 import { BackBtn, Empty, SearchBox } from '../components/ui';
 import { fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, typeOf } from '../lib/tracker';
 
+const ADMIN_NAV = [['/admin', 'home', 'Aperçu', true], ['/admin/users', 'users', 'Comptes'], ['/admin/content', 'book', 'Contenu'], ['/admin/events', 'star', 'Événements']];
+
 export function AdminTabs() {
-  const cls = ({ isActive }) => 'atab' + (isActive ? ' on' : '');
   return (
-    <nav className="atabs admin-tabs" aria-label="Espace administrateur">
-      <NavLink to="/admin" end className={cls}>Aperçu</NavLink>
-      <NavLink to="/admin/users" className={cls}>Comptes</NavLink>
-      <NavLink to="/admin/content" className={cls}>Contenu</NavLink>
-      <NavLink to="/admin/events" className={cls}>Événements</NavLink>
+    <nav className="adm-nav" aria-label="Espace administrateur">
+      {ADMIN_NAV.map(([to, ic, label, end]) => (
+        <NavLink key={to} to={to} end={!!end} className={({ isActive }) => 'adm-link' + (isActive ? ' on' : '')}><Icon n={ic} /><span>{label}</span></NavLink>
+      ))}
     </nav>
   );
 }
 
 export function AdminShell({ title = 'Administration', back = '/home', children }) {
   return (
-    <section className="page admin">
-      <div className="topbar"><BackBtn to={back} /><h2>{title}</h2><span className="sp" /></div>
-      <div className="px"><AdminTabs />{children}</div>
+    <section className="page admin adm">
+      <header className="adm-head">
+        <BackBtn to={back} />
+        <div className="adm-title"><small>FitLife · Espace administrateur</small><h2>{title}</h2></div>
+        <span className="adm-badge">Admin</span>
+      </header>
+      <div className="adm-body">
+        <AdminTabs />
+        <div className="adm-main">{children}</div>
+      </div>
     </section>
   );
 }
@@ -42,8 +50,8 @@ export function AdminHome() {
   useEffect(load, [load]);
   const C = d?.counts;
   const cards = d ? [
-    ['Comptes', C.users, '/admin/users'], ['Activités', C.activities, '/admin/users'], ['Séances', C.workouts, '/admin/content'], ['Cours', C.courses, '/admin/content'],
-    ['Coachs', C.trainers, '/admin/content'], ['Événements', C.events, '/admin/events'], ['Défis', C.challenges, '/activity/challenges'], ['Publications', C.posts, '/activity/community'],
+    ['Comptes', C.users, '/admin/users', 'users'], ['Activités', C.activities, '/admin/users', 'route'], ['Séances', C.workouts, '/admin/content', 'bolt'], ['Cours', C.courses, '/admin/content', 'book'],
+    ['Coachs', C.trainers, '/admin/content', 'user'], ['Événements', C.events, '/admin/events', 'star'], ['Défis', C.challenges, '/activity/challenges', 'trophy'], ['Publications', C.posts, '/activity/community', 'chat'],
   ] : [];
   return (
     <AdminShell>
@@ -51,14 +59,14 @@ export function AdminHome() {
         <div aria-busy="true" aria-label="Chargement"><div className="skeleton" style={{ height: 180, borderRadius: 26 }} /></div>
       ) : (
         <>
-          <div className="today atotals">
+          <div className="today atotals adm-hero">
             <div><small>Distance totale</small><b>{fmtKm(d.totals.distance)}<em> km</em></b></div>
             <div><small>Temps total</small><b>{fmtDuration(d.totals.duration)}</b></div>
             <div><small>Pas</small><b>{d.totals.steps.toLocaleString('fr')}</b></div>
           </div>
           <p className="muted" style={{ textAlign: 'center' }}>Cette semaine : {d.week.users} {d.week.users === 1 ? 'nouveau compte' : 'nouveaux comptes'}, {d.week.activities} {d.week.activities === 1 ? 'activité' : 'activités'}.</p>
           <div className="admin-grid">
-            {cards.map(([label, n, to]) => <Link key={label} to={to} className="stat-card"><b>{n}</b><small>{label}</small></Link>)}
+            {cards.map(([label, n, to, ic]) => <Link key={label} to={to} className="stat-card"><i><Icon n={ic} /></i><b>{n}</b><small>{label}</small></Link>)}
           </div>
         </>
       )}

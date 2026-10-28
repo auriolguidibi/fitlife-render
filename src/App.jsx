@@ -17,6 +17,7 @@ import { TrainerProfile, Trainers } from './pages/Trainers';
 import { Favorites, Profile } from './pages/Account';
 import { Activity, ActivityDetail, ActivityLive } from './pages/Activity';
 import { Community } from './pages/Community';
+import News from './pages/News';
 import Photo from './pages/Photo';
 import History from './pages/History';
 import Chat from './pages/Chat';
@@ -30,19 +31,21 @@ import { AdminEvents } from './pages/AdminEvents';
 import { ChallengeDetail, ChallengeNew, Challenges } from './pages/Challenges';
 
 const NAV = [
-  ['/home', 'home', 'Accueil'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'], ['/trainers', 'users', 'Coachs'],
-  ['/favorites', 'heart', 'Favoris'], ['/profile', 'user', 'Profil'],
+  ['/home', 'home', 'Accueil'], ['/news', 'bolt', 'Actus'], ['/activity', 'route', 'Activité'], ['/social', 'chat', 'Social'], ['/courses', 'book', 'Cours'],
+  ['/trainers', 'users', 'Coachs'], ['/favorites', 'heart', 'Favoris', 'side'], ['/profile', 'user', 'Profil'],
 ];
 const BARE = ['/welcome', '/goals', '/photo', '/social/chat', '/social/call', '/session', '/summary', '/activity/live'];
 
-function Nav({ unread }) {
+function Nav({ unread, admin }) {
   return (
     <nav className="tabbar" aria-label="Principal">
-      {NAV.map(([to, ic, label]) => (
-        <NavLink key={to} to={to} className={({ isActive }) => 'tab' + (isActive ? ' on' : '')} aria-label={label}>
+      <div className="side-brand" aria-hidden="true"><img src="/logo.png" alt="" width="34" height="34" /><span>Fit<b>Life</b></span></div>
+      {NAV.map(([to, ic, label, only]) => (
+        <NavLink key={to} to={to} className={({ isActive }) => 'tab' + (only ? ' side-only' : '') + (isActive ? ' on' : '')} aria-label={label}>
           <Icon n={ic} /><span className="tl">{label}</span>{ic === 'chat' && unread > 0 && <b className="badge" aria-label={`${unread} non lu${unread > 1 ? 's' : ''}`}>{unread > 9 ? '9+' : unread}</b>}
         </NavLink>
       ))}
+      {admin && <NavLink to="/admin" className={({ isActive }) => 'tab side-only' + (isActive ? ' on' : '')}><Icon n="star" /><span className="tl">Admin</span></NavLink>}
     </nav>
   );
 }
@@ -68,6 +71,7 @@ export default function App() {
           <Route path="/goals" element={<Goals />} />
           <Route path="/photo" element={<Photo />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/news" element={<RequireAuth><News /></RequireAuth>} />
           <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
           <Route path="/courses/:id" element={<RequireAuth><CourseDetail /></RequireAuth>} />
           <Route path="/workout/:id" element={<RequireAuth><Workout /></RequireAuth>} />
@@ -104,7 +108,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!bare && <Nav unread={unread} />}
+      {!bare && <Nav unread={unread} admin={!!user?.admin} />}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{toast}</div>
     </div>
   );

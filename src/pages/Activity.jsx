@@ -5,6 +5,7 @@ import { useStore } from '../store';
 import Icon from '../components/Icon';
 import RouteMap from '../components/RouteMap';
 import { BackBtn, Empty } from '../components/ui';
+import ExerciseAnim, { ACTIVITY_MOVE } from '../components/ExerciseAnim';
 import { ActivityTabs, TypePhoto, dateLabel, timeLabel } from '../components/ActivityBits';
 import {
   ACTIVITY_TYPES, StepCounter, evaluateFix, fmtDistance, fmtDuration, fmtKm, fmtPace, fmtSpeed, simplify, typeOf,
@@ -35,7 +36,7 @@ export function Activity() {
         <div className="atypes" role="radiogroup" aria-label="Type d'activité">
           {ACTIVITY_TYPES.map((t) => (
             <button key={t.id} role="radio" aria-checked={type === t.id} className={'atype' + (type === t.id ? ' on' : '')} onClick={() => setType(t.id)}>
-              <TypePhoto type={t.id} /><span className="shade" /><b>{t.label}</b>
+              <TypePhoto type={t.id} /><span className="shade" /><span className="atype-demo"><ExerciseAnim move={ACTIVITY_MOVE[t.id]} compact label={t.label} play={type === t.id} /></span><b>{t.label}</b>
             </button>
           ))}
         </div>
@@ -204,7 +205,7 @@ export function ActivityLive() {
 
       {!live ? (
         <div className="live-ready">
-          <div className="trophy"><Icon n="pin" /></div>
+          <div className="live-demo"><ExerciseAnim move={ACTIVITY_MOVE[info.id] || 'run'} label={info.label} /></div>
           <h1 className="h1">Prêt à partir ?</h1>
           <p className="sub">Autorise la localisation quand ton téléphone te le demande et garde l'écran allumé. La distance et le parcours viennent du GPS, les pas du capteur de mouvement.</p>
           <button className="btn" onClick={start}>Démarrer : {info.label.toLowerCase()}</button>

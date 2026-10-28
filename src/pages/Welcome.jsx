@@ -9,6 +9,10 @@ import { assetUrl } from '../lib/media';
 
 const BASE = import.meta.env.BASE_URL;
 const asset = (p) => assetUrl(p) || undefined;
+// vidéo d'accueil claire et lumineuse (course en extérieur) : elle remplace l'ancienne vidéo de salle sombre,
+// une autre vidéo choisie par l'admin dans le contenu reste respectée
+const OLD_VIDEO = 'media/videos/weights.mp4';
+const BRIGHT = { video: 'media/videos/run.mp4', poster: 'media/photos/37718409.jpg' };
 
 export default function Welcome() {
   const nav = useNavigate();
@@ -38,7 +42,7 @@ export default function Welcome() {
   return (
     <section className="onb">
       <div className="onb-art">
-        {content ? <Vid src={asset(content.video)} poster={asset(content.poster)} pos="center 20%" /> : <div className="art skeleton" />}
+        {content ? <Vid src={asset(content.video === OLD_VIDEO ? BRIGHT.video : content.video)} poster={asset(content.video === OLD_VIDEO ? BRIGHT.poster : content.poster)} pos="center 30%" /> : <div className="art skeleton" />}
       </div>
       <div className="txt">
         <div className="brand"><img className="brand-mark" src={`${BASE}logo.png`} alt="" width="34" height="34" /><span className="brand-name">{content ? <>{content.brand.slice(0, 3)}<span>{content.brand.slice(3)}</span></> : <>Fit<span>Life</span></>}</span></div>
